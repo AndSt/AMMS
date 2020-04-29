@@ -1,0 +1,14 @@
+[
+  {
+    "model_name": "general_fields_payment_mode",
+    "aspired_version": "1.x",
+    "load_type": "local",
+    "load_url": "data/shared_model_volume"
+  },
+  {
+    "model_name": "general_fields_payment_mode",
+    "aspired_version": "1.x",
+    "load_type": "local",
+    "load_url": "data/shared_model_volume"
+  }
+]

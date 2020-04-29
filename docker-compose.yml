@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  amms_exmpl_text_clf:
+    build: amms
+    environment:
+      - MODEL_NAME="general_fields_payment_mode"
+      - ASPIRED_VERSION="1.0.1"
+      - LOAD_TYPE="shared"
+      - LOAD_PATH="/shared_volume"
+    ports:
+      - "5000:5000"
+  retrain_exmpl_text_clf:
+    build: ./retrain
+    env_file:
+      - ./retrain/compose.env
+    ports:
+      - "6000:6000"
+
+## TODO define resource instructions
