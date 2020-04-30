@@ -1,6 +1,10 @@
-import joblib
 import os
 from enum import Enum
+
+import joblib
+import glob
+
+from src.servables.servable_base import ServableMetaData
 
 
 class LoaderStatus(Enum):
@@ -42,7 +46,6 @@ class Loader:
             self.load_from_shared()
 
     def load_from_local(self) -> bool:
-
         version = self.newest_version
         date_string = ''.join(version['date'].split('.'))
         version_string = '-'.join(version['version'].split('.'))
@@ -57,6 +60,11 @@ class Loader:
         with open('{}/{}.pbz2'.format(self.model_dir, file_name), 'wb') as handle:
             joblib.dump(model, handle)
         return True
+
+    def load_shared_model_versions(self, path):
+
+        files = glob.glob('{}/*.pbz2'.format(path))
+        model_versions = []
 
     def load_from_shared(self, version):
         pass

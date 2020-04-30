@@ -1,0 +1,2 @@
+# Run every 2 seconds
+*/2 * * * * * * echo "Was geht ab"

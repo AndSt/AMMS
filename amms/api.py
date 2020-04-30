@@ -44,7 +44,7 @@ async def model_repository():
             'shared': 'exists',
             'path': '/shared_volume'
         }
-    elif os.path.exists('../shared_volume'):
+    elif os.path.exists('../examples/retrained_model/shared_volume'):
         return {
             'shared': 'exists',
             'path': 'shared_volume/'

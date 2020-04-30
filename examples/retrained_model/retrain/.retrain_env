@@ -1,0 +1,5 @@
+# example environment file
+
+USERNAME=retrain_worker # needed for Metaflow
+TRAIN_DIR=/retrain
+MODEL_STORE_DIR=/shared_volume # shared folder containing the central model store

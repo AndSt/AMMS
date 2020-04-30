@@ -4,9 +4,11 @@ __pycache__/
 
 amms/data/models/
 amms/__pycache__/
-shared_volume/*
+examples/retrained_model/shared_volume/*
 
-retrain/.ipynb_checkpoints/
-retrain/data/
-retrain/.metaflow/
-retrain/src/.metaflow/
+examples/retrained_model/retrain/.ipynb_checkpoints/
+examples/retrained_model/retrain/data/models
+examples/retrained_model/retrain/.metaflow
+examples/retrained_model/retrain/src/.metaflow
+*/**/.metaflow
+**.pbz2
