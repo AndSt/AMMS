@@ -61,13 +61,28 @@ class Loader:
             joblib.dump(model, handle)
         return True
 
-    def load_shared_model_versions(self, path):
+    def load_available_model_versions_from_shared_folder(self, path):
 
-        files = glob.glob('{}/*.pbz2'.format(path))
+        file_paths = glob.glob('{}/*.pbz2'.format(path))
         model_versions = []
+        for file_path in file_paths:
+            file_name = file_path.split('/')[-1]
+            try:
+                servable = ServableMetaData.from_filename(file_name=file_name)
+                model_versions.append(servable)
+            except Exception as e:
+                pass  # TODO logging; keep in mind that .gitkeep is there, shouldn't be logged
+        return model_versions
 
-    def load_from_shared(self, version):
-        pass
+    def load_from_shared(self, source_dir: str, target_dir: str, filename: str):
+        try:
+            with open('{}/{}'.format(source_dir, filename), 'rb') as shared_handle:
+                model = joblib.load(shared_handle)
+                with open('{}/{}'.format(target_dir, filename), 'wb') as local_handle:
+                    joblib.dump(model, local_handle)
+        except Exception as e:
+            # TODO logging
+            print(e)
 
     def load_from_s3(self):
         pass

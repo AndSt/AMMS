@@ -7,33 +7,16 @@ class HealthStatusResponse(BaseModel):
     generated_at: str
 
 
-class Input(BaseModel):
-    text: str
+class ModelRequest(BaseModel):
+    model_name: str
+    version: str
 
 
-class TextInput(BaseModel):
-    text: str
-
-
-class ModelStatusResponse(BaseModel):
+class ModelResponse(BaseModel):
     model_name: str
     version: str
     train_date: str
 
 
 class AllModelsStatusResponse(BaseModel):
-    available_models: List[ModelStatusResponse]
-
-
-class PredictionRequest(BaseModel):
-    examples: List[Input]
-
-
-class LabelScoreExample(BaseModel):
-    label: str
-    score: float
-
-
-class PredictionResponse(BaseModel):
-    model: ModelStatusResponse
-    result: List[List[LabelScoreExample]]
+    available_models: List[ModelResponse]

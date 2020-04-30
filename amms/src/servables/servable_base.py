@@ -1,8 +1,31 @@
 import os
+from typing import Dict, List, Union
 from enum import Enum
+
 from abc import ABC, abstractmethod
-from typing import Dict
 import joblib
+from pydantic import BaseModel
+
+from src.data_models import ModelRequest, ModelResponse
+
+
+class ServableRequest(BaseModel):
+    model: ModelRequest
+    # TODO input has to be specified
+
+
+class TextPredictionRequest(ServableRequest):
+    input: Union[str, List[str]]
+
+
+class LabelScoreExample(BaseModel):
+    label: str
+    score: float
+
+
+class ServableResponse(BaseModel):
+    model: ModelResponse
+    result: List[List[LabelScoreExample]]
 
 
 class ServableStatus(Enum):
@@ -21,11 +44,13 @@ class ServableMetaData:
 
     @staticmethod
     def from_filename(file_name: str = None):
-        print(file_name)
+        # TODO logging
         if isinstance(file_name, str) is False:
             raise ValueError('File name needs to be a string.')
 
         split = file_name.split('-')
+        if len(split) != 3:
+            raise ValueError('The given file doesn\'t support the model naming scheme.')  # Refer to the docs for scheme
 
         model_name = split[0]  # get rid of _ character
         version = split[1]
@@ -79,6 +104,12 @@ class Servable(ABC):
         except Exception as e:
             # TODO logging
             return False
+
+    def validate_input(self):
+        pass
+
+    def transform_input(self):
+        pass
 
     @abstractmethod
     def predict(self):

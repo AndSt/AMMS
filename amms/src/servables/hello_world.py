@@ -6,7 +6,11 @@ from .servable_base import ServableStatus, Servable
 from pydantic import BaseModel
 
 
-class HelloWorldPredictionInput(BaseModel):
+class HelloWorldRequest(BaseModel):
+    sample: Optional[str]
+
+
+class HelloWorldResponse(BaseModel):
     sample: Optional[str]
 
 
@@ -38,4 +42,3 @@ class HelloWorldServable(Servable):
         except Exception as e:
             # TODO logging
             return False
-

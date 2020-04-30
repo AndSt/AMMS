@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import FastAPI, Path
 from fastapi_utils.tasks import repeat_every
 
-from src.data_models import HealthStatusResponse, ModelStatusResponse, AllModelsStatusResponse, PredictionRequest, \
+from src.data_models import HealthStatusResponse, ModelResponse, AllModelsStatusResponse, PredictionRequest, \
     PredictionResponse
 from src.model_manager import ModelManager
 from src.loader import Loader
@@ -57,15 +57,15 @@ async def model_repository():
 
 @app.get('/models', response_model=AllModelsStatusResponse)
 async def available_models(model_name: str = None):
-    result = manager.loaded_versions()
+    result = manager.available_versions()
     logging.info(result)
     return result
 
 
-@app.get('/models/{model_name}/{version}', response_model=ModelStatusResponse)
+@app.get('/models/{model_name}/{version}', response_model=ModelResponse)
 async def available_model(model_name: str = '',
                           version: Optional[str] = Path('', title='Ask info about the specific version', )):
-    result = manager.version_details(model_name, version)
+    result = manager.model_meta_data(model_name, version)
     return result
 
 
