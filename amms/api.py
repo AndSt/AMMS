@@ -1,18 +1,16 @@
-import os
 import time
-from typing import Optional
+from typing import Union
 
-from fastapi import FastAPI, Path
+import uvicorn
+from fastapi import FastAPI
 from fastapi_utils.tasks import repeat_every
 
-from src.data_models import HealthStatusResponse, ModelResponse, AllModelsStatusResponse, PredictionRequest, \
-    PredictionResponse
+from src.data_models import HealthStatusResponse, ModelMetaDataResponse, ModelsMetaDataResponse
 from src.model_manager import ModelManager
-from src.loader import Loader
+from src.config import setup_logging
 import logging
 
 app = FastAPI()
-loader = Loader()
 manager = ModelManager()
 
 
@@ -37,44 +35,57 @@ async def health_check():
         return {'status': 'error', "message": e}
 
 
-@app.get('/model_repository')
-async def model_repository():
-    if os.path.exists('/shared_volume'):
-        return {
-            'shared': 'exists',
-            'path': '/shared_volume'
-        }
-    elif os.path.exists('../examples/retrained_model/shared_volume'):
-        return {
-            'shared': 'exists',
-            'path': 'shared_volume/'
-        }
-    else:
-        return {
-            'shared': 'non-existent'
-        }
+# @app.get('/model_repository')
+# async def model_repository():
+#     if os.path.exists('/shared_volume'):
+#         return {
+#             'shared': 'exists',
+#             'path': '/shared_volume'
+#         }
+#     elif os.path.exists('../examples/retrained_model/shared_volume'):
+#         return {
+#             'shared': 'exists',
+#             'path': 'shared_volume/'
+#         }
+#     else:
+#         return {
+#             'shared': 'non-existent'
+#         }
 
 
-@app.get('/models', response_model=AllModelsStatusResponse)
-async def available_models(model_name: str = None):
-    result = manager.available_versions()
+@app.get('/servables', response_model=ModelsMetaDataResponse)
+async def meta_data():
+    result = manager.all_models_meta_data_response()
     logging.info(result)
     return result
 
 
-@app.get('/models/{model_name}/{version}', response_model=ModelResponse)
-async def available_model(model_name: str = '',
-                          version: Optional[str] = Path('', title='Ask info about the specific version', )):
-    result = manager.model_meta_data(model_name, version)
+@app.get('/servables/{model_name}', response_model=ModelsMetaDataResponse)
+async def model_meta_data(model_name: str):
+    return manager.model_meta_data_response(model_name)
+
+
+@app.get('/servables/{model_name}', response_model=Union[ModelsMetaDataResponse, ModelMetaDataResponse])
+async def model_version_meta_data(model_name: str):
+    return manager.model_meta_data_response(model_name)
+
+
+@app.get('/servables/{model_name}/{version}', response_model=ModelsMetaDataResponse)
+async def available_model(model_name: str, version: str):
+    result = manager.model_meta_data_response(model_name, version)
     return result
 
 
-@app.post('/predict/', response_model=PredictionResponse)
-async def text_predict(input: PredictionRequest):
+@app.post('/predict/')
+async def predict(input):
     text = input.text
-    print(text)
     start_time = time.time()
     result = manager.model_predict(text)
     result.update({'time': time.time() - start_time})
 
     return result
+
+
+if __name__ == "__main__":
+    setup_logging()
+    uvicorn.run("api:app", host="0.0.0.0", port=5000, log_level="info")

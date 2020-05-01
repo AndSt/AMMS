@@ -1,9 +1,12 @@
 
+**.DS_Store
 **.idea/
 **__pycache__/
 **.pbz2
 **.ipynb_checkpoints
 
+**.log
+**/logs
 **/models
 **.metaflow
 

@@ -22,7 +22,7 @@ services:
 
 configs:
   amms_model_config:
-    file: model_config.json
+    file: servables.json
 
 volumes:
   shared_volume:

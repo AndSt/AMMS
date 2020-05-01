@@ -2,7 +2,7 @@ from typing import Union, List
 
 import numpy as np
 
-from src.servables.servable_base import ServableStatus, Servable
+from src.servable_base import ServableStatus, Servable
 from pydantic import BaseModel
 
 
@@ -16,7 +16,7 @@ class SklearnTextInputServable(Servable):
 
         # loads model from source and checks whether prediction works
         # That's basically runtime testing. This is intended, as a core requirement is to enable the server to load
-        # arbitrary models
+        # arbitrary servables
         self.init_model()
 
     def validate_input(self, samples: Union[str, List[str]]):

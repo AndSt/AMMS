@@ -1,17 +1,17 @@
-FROM python:3.7-slim-buster
+FROM tiangolo/uvicorn-gunicorn:python3.7-alpine3.8
 LABEL maintainer='Andreas Stephan'
 
-RUN apt-get update && apt-get install -y python3-dev build-essential
+# TODO: should apt-get update be run and installation of additional resources?
 
 RUN mkdir -p /app/data
 COPY requirements.txt /app/
 
 # install requirements before code is loaded in order to
 WORKDIR /app
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /app
-# load config file.
+# TODO: how to load config file.
 
 EXPOSE 5000
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "5000", "api:app"]
+CMD ["python", "api.py"]

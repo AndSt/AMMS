@@ -1,56 +1,61 @@
+import logging
+
 from src.config import Config
-from src.version_manager import VersionManager
-from src.loader import Loader
-from src.servables.servable_base import Servable, ServableStatus
+from src.servable_base import Servable
 
 
 class ModelManager:
     def __init__(self):
         self.config = Config()
-        self.loader = Loader()
-        self.version_manager = VersionManager()
         self.servables = []
-        print("Reload models")
-        self.update()
+        logging.info('Load servables')
 
-    def available_versions(self):
-        result = []
-        for loaded_model in self.servables:
-            result.append(loaded_model.as_dict())
-        return {'available_models': result}
-
-    def model_meta_data(self):
-        if len(self.servables) > 0:
-            return self.servables[0].as_dict()
-        return RuntimeError("No model is loaded in cache yet.")
-
-    def predict(self, model_name: str, version: str, input=None):
-        if (model_name, version) in self.servables:
-            return self.servables[(model_name, version)].predict(input)
-        else:
-            raise Exception  # TODO model doesn't exist error
-
-    def model_predict(self, text: str):
-        pred = self.model.predict([text])[0]
-        pred_proba = self.model.predict_proba([text])[0]
-        return {
-            "version": self.loaded_version,
-            "class": int(pred),
-            "class_proba": pred_proba.tolist()
-        }
+    def init_servables(self):
+        self.servables = [Servable(aspired_model) for aspired_model in self.config.aspired_models]
 
     def update(self):
-        self.version_manager.update()
-        update_policies = self.version_manager.retrieve_update_policies()
+        # TODO error handling; testing
+        for servable in self.servables:
+            servable.update()
 
-        for update_policy in update_policies:
-            print(update_policy)  # TODO reload model
-            if update_policy.type == 'shared':
-                self.loader.load_from_shared(update_policy.url, self.config.model_dir, update_policy.file_name)
-            else:
-                print('Error')  # TODO error handling
+    def predict(self, model_name: str, version: str = None, input=None):
+        """Predict. Check if matching model is available.
 
-            servable = Servable(update_policy.model_name, update_policy.version, update_policy.timestamp,
-                                update_policy.model_dir)
-            if servable.status == ServableStatus.IDLE:
-                self.servables[(update_policy.model_name, update_policy.version)] = servable
+        """
+        for servable in self.servables:
+            if model_name != servable.meta_data.model_name:
+                continue
+            if version is None or version == servable.meta_data.version.tostr():
+                return servable.predict(input)
+        return {
+            'model_request': {
+                'model_name': model_name,
+                'version': version
+            },
+            'available_models': self.all_models_meta_data_response()
+        }
+
+    def all_models_meta_data_response(self):
+        models = []
+        for loaded_model in self.servables:
+            models.append(loaded_model.as_dict())
+        return {'servables': models}
+
+    def model_meta_data_response(self, model_name: str = None, version: str = None):
+        result = []
+        # TODO error handling, if version is false
+        if model_name is None or isinstance(model_name, str) is False:
+            logging.info('User didn\'t specify the model name correctly')
+            raise ValueError('Model needs to be specified.')
+
+        for servable_model_name, servable_version in self.servables:
+            if servable_model_name != model_name:
+                continue
+            if version is None:
+                result.append(self.servables[(servable_model_name, servable_version)])
+            elif version == servable_model_name:
+                result.append(self.servables[(servable_model_name, servable_version)])
+
+        if len(self.servables) == 1:
+            return result[0]
+        return result

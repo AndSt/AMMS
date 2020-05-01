@@ -21,12 +21,16 @@ In here, a shared docker volume will be used.
 
 ### Design decisions
 
-- Minimal framework serving multiple models
 - Be close to the awesome tensorflow serving
 - Keep number of dependencies minimal to allow extensions dependent
 on ML library or its version, i.e. Sklearn 21.1 vs 22.1.
+- Minimal framework serving multiple models: 
+  - Only one version policy
+  - Consequently only one reloading policy
+  - Only Metadata and Prediction endpoint
 
 ### Techstack
 
 - FastAPI
-- docker-compose
+- FastAPI utils
+- Docker

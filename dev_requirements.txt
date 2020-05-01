@@ -1,0 +1,4 @@
+# Requirements which are useful for development
+
+pytest
+jupyter

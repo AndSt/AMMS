@@ -1,70 +1,70 @@
-import os
-from typing import Dict, List
-import functools
+from __future__ import annotations
 
-from src.config import Config, AspiredModel
-from src.servables.servable_base import ServableMetaData
-from src.loader import Loader
+from typing import Union
 
 
-class ModelVersionManager:
-    # handles versioning of one model type
+class VersionManager:
+    """
+    Version naming convention:
+    Main version - incompatible to code
+    Sub version - compatible code, even though the model is different
+    Sub sub version - Additional changes, for instance retraining
+    """
 
-    # TODO use attr or similar to define information classes
-    def __init__(self, aspired_model: AspiredModel, loader: Loader, model_dir: str = 'data/models'):
-        self.aspired_model = aspired_model
-        self.model_dir = model_dir
-        self.loader = loader
+    def __init__(self, version: str):
+        self.set_version(version)
 
-        self.update_policy = {}  # dict of the form {load: {type, url, file_name}, {remove: servable}}
-        # TODO think about cases where reloading makes sense, but no update is necessary
+    def set_version(self, version: str):
+        if '.' in version:
+            version = version.split('.')
+        elif '_' in version:
+            version = version.split('_')
+        else:
+            raise ValueError('TODO; only . or _ allowed for model versions')
+        main_version = int(version[0])
+        if version[1] == 'x':
+            sub_version = 'x'
+            sub_sub_version = 'x'
+        else:
+            sub_version = int(version[1])
+            sub_sub_version = int(version[2]) if len(version) > 2 else 'x'
 
-    def reload_available_versions(self):
-        self.available_models = self.loader.load_available_model_versions_from_shared_folder()
-        self.available_models = functools.reduce(lambda m: self.is_valid(m.model_name, m.version),
-                                                 self.available_models)
+        self.version = '_'.join(version)
+        self.main_version = main_version
+        self.sub_version = sub_version
+        self.sub_sub_version = sub_sub_version
 
-    def is_valid(self, model_name, version):
-        # TODO Version logiv
-        if model_name == self.aspired_model.model_name and version == self.aspired_model.aspired_version:
+    def is_equal(self, version: Union[str, VersionManager]) -> bool:
+        if isinstance(version, VersionManager):
+            version = version.tostr()
+
+        if self.tostr() == version:
+            return True
+        return False
+
+    def is_compatible_and_newer(self, version: Union[str, VersionManager]) -> bool:
+        if isinstance(version, str):
+            version = VersionManager(version)
+
+        if isinstance(version, VersionManager) is False:
+            raise ValueError('You need to provide a version string or a object of type `Version`.')
+
+        if version.main_version != self.main_version:
+            return False
+        elif version.sub_version > self.sub_version:
+            return True
+        elif version.sub_version == self.sub_version and version.sub_sub_version > self.sub_sub_version:
             return True
         else:
             return False
 
-    def reload_downloaded_model_versions(self):
-        # TODO logging
-        downloaded_models = []
-        for file_name in os.listdir(self.model_dir):
-            if file_name == '.gitkeep':
-                continue
-            downloaded_model = ServableMetaData.from_filename(file_name)
-            downloaded_models.append(downloaded_model)
-        self.downloaded_models = downloaded_models
+    @staticmethod
+    def from_file_name(file_name: str) -> VersionManager:
+        # TODO link to model naming convention/description
+        split = file_name.split('-')
+        if len(split) != 3:
+            raise ValueError('File format is incorrect. Make sure you use only 2 `-` in your model names.')
+        return VersionManager(split[1])
 
-    def update_info(self):
-        self.reload_available_versions()
-        self.reload_downloaded_model_versions()
-
-    def specify_update_policy(self):
-        self.update_policy = {}
-
-
-class VersionManager:
-    """Simple Wrapper around multiple version managers.
-    """
-    def __init__(self):
-        config = Config()
-        self.loader = Loader()
-        self.model_managers = [ModelVersionManager(aspired_model, self.loader, config.model_dir) for aspired_model in
-                               config.aspired_models]
-
-        self.update()
-
-    def update(self):
-        for model_manager in self.model_managers:
-            model_manager.update_info()
-            model_manager.specify_update_policy()
-
-    def retrieve_update_policies(self) -> List[Dict]:
-        updates = [model_manager.update_policy for model_manager in self.model_managers]
-        return updates
+    def tostr(self):
+        return "{}_{}_{}".format(self.main_version, self.sub_version, self.sub_sub_version)
