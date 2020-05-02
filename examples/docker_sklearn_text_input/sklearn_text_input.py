@@ -2,7 +2,10 @@ from typing import Union, List
 
 import numpy as np
 
-from src.servable_base import ServableStatus, Servable
+from src.servable_base import ServableStatus
+from src.model_wrapper import ModelWrapper
+from src.data_models.prediction_requests import TextPredictionRequest
+from src.data_models.prediciton_responses import PredictionResponse
 from pydantic import BaseModel
 
 
@@ -10,21 +13,19 @@ class SklearnTextInputPredictionInput(BaseModel):
     samples: Union[str, List[str]]
 
 
-class SklearnTextInputServable(Servable):
-    def __init__(self, model_name: str, version: str, date: str, model_dir: str):
-        super(SklearnTextInputServable, self).__init__(model_name, version, date, model_dir)
+class SklearnTextInputModel(ModelWrapper):
+    def __init__(self, file_path):
+        super(SklearnTextInputModel, self).__init__(file_path=file_path)
 
         # loads model from source and checks whether prediction works
         # That's basically runtime testing. This is intended, as a core requirement is to enable the server to load
         # arbitrary local_servables
-        self.init_model()
 
     def validate_input(self, samples: Union[str, List[str]]):
         # TODO error handling; Do we have to do this or can we deal with this with pedantic?? aka. how to do dynamic pydantic class
         return True
 
     def predict(self, samples: SklearnTextInputPredictionInput):
-        self.status = ServableStatus.PREDICTION
         samples = samples.samples
         self.validate_input(samples.samples)
 
@@ -56,3 +57,8 @@ class SklearnTextInputServable(Servable):
             # TODO logging
             return False
 
+    def request_format(self):
+        return TextPredictionRequest
+
+    def response_format(self):
+        return PredictionResponse
