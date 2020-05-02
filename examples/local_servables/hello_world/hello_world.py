@@ -1,25 +1,11 @@
-from typing import Union, List, Optional
-
 from src.model_wrapper import ModelWrapper
-from pydantic import BaseModel
-
-
-class HelloWorldRequest(BaseModel):
-    sample: Optional[str]
-
-
-class HelloWorldResponse(BaseModel):
-    sample: Optional[str]
+from src.data_models.prediction_requests import TextPredictionRequest
+from src.data_models.prediciton_responses import PredictionResponse
 
 
 class HelloWorldModel(ModelWrapper):
-    def __init__(self, file_name: str):
-        super(HelloWorldModel, self).__init__(file_name) # base class loads file and makes a test prediction
 
-    def validate_input(self, samples: Union[str, List[str]]) -> bool:
-        return True
-
-    def predict(self, samples: HelloWorldRequest):
+    def predict(self, samples: TextPredictionRequest):
         # Here is supposed to be a prediction
         return {
             'model_name': self.meta_data.model_name,
@@ -33,5 +19,10 @@ class HelloWorldModel(ModelWrapper):
         try:
             return True
         except Exception as e:
-            # TODO logging
             return False
+
+    def request_format(self):
+        return TextPredictionRequest
+
+    def response_format(self):
+        return PredictionResponse

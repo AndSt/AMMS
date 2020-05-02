@@ -22,7 +22,7 @@ services:
 
 configs:
   amms_model_config:
-    file: servables.json
+    file: local_servables.json
 
 volumes:
   shared_volume:

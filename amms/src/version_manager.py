@@ -11,60 +11,103 @@ class VersionManager:
     Sub sub version - Additional changes, for instance retraining
     """
 
-    def __init__(self, version: str):
-        self.set_version(version)
+    def __init__(self, version_str: str):
+        if isinstance(version_str, str) is False:
+            raise ValueError('No string given: {}'.format(version_str))
 
-    def set_version(self, version: str):
-        if '.' in version:
-            version = version.split('.')
-        elif '_' in version:
-            version = version.split('_')
+        # Scenario 1: Only main version number is given
+        if version_str.isdigit():
+            print('v', version_str)
+            self.main_version = int(version_str)
+            self.sub_version = 0
+            self.sub_sub_version = 0
+            self.is_exact_specification = True
+            return
+
+        # Determine, whether '.' or '_' format is used to describe versions.
+        if '.' in version_str:
+            version_str = version_str.split('.')
+        elif '_' in version_str:
+            version_str = version_str.split('_')
         else:
             raise ValueError('TODO; only . or _ allowed for model versions')
-        main_version = int(version[0])
-        if version[1] == 'x':
-            sub_version = 'x'
-            sub_sub_version = 'x'
+        # correctness checks
+        # First version is not allowed to be arbitrary
+        if version_str[0].isdigit() is False:
+            raise ValueError('The top-level version needs to be set, as it marks breaking model changes.')
+        # Only numbers or 'x' allowed
+        for x in version_str:
+            if x.isdigit() is False and x != 'x':
+                raise ValueError(
+                    'A correct version is only allowed to hold numbers and \'x\' to describe an arbitrary number ')
+
+        # First version is not allowed to be arbitrary
+        self.main_version = int(version_str[0])
+
+        # Scenario 2: First sublevel is set to x. Then it doesn't matter how the third level is designed
+        if version_str[1] == 'x':
+            self.sub_version = 'x'
+            self.sub_sub_version = 'x'
+            self.is_exact_specification = False
+            return
+
+        # Now we know, we can set the first subversion as number
+        self.sub_version = int(version_str[1])
+
+        # Scenario 3: Only top and sublevel version are defined
+        if len(version_str) == 2:
+            self.sub_sub_version = 0
+            self.is_exact_specification = True
+            return
+
+            # Scenario 4: All levels are specified, but maybe as 'x'
+
+        if version_str[2] == 'x':
+            self.sub_sub_version = 'x'
+            self.is_exact_specification = False
         else:
-            sub_version = int(version[1])
-            sub_sub_version = int(version[2]) if len(version) > 2 else 'x'
+            self.sub_sub_version = int(version_str[2])
+            self.is_exact_specification = True
 
-        self.version = '_'.join(version)
-        self.main_version = main_version
-        self.sub_version = sub_version
-        self.sub_sub_version = sub_sub_version
+    def __eq__(self, other: Union[str, VersionManager]) -> bool:
+        if isinstance(other, str):
+            other = VersionManager(other)
 
-    def is_equal(self, version: Union[str, VersionManager]) -> bool:
-        if isinstance(version, VersionManager):
-            version = version.tostr()
-
-        if self.tostr() == version:
-            return True
-        return False
-
-    def is_compatible_and_newer(self, version: Union[str, VersionManager]) -> bool:
-        if isinstance(version, str):
-            version = VersionManager(version)
-
-        if isinstance(version, VersionManager) is False:
-            raise ValueError('You need to provide a version string or a object of type `Version`.')
-
-        if version.main_version != self.main_version:
+        if self.main_version != other.main_version:
             return False
-        elif version.sub_version > self.sub_version:
+        elif self.sub_version != other.sub_version:
+            return False
+        elif self.sub_sub_version != other.sub_sub_version:
+            return False
+        return True
+
+    def is_compatible_and_newer(self, other: Union[str, VersionManager]) -> bool:
+        if isinstance(other, str):
+            other = VersionManager(other)
+
+        if self.is_exact_specification is False or other.is_exact_specification is False:
+            raise ValueError('Only versions with an exact specification, i.e. no \'x\' can be compared.')
+
+        if other.main_version != self.main_version:
+            return False
+        elif other.sub_version > self.sub_version:
             return True
-        elif version.sub_version == self.sub_version and version.sub_sub_version > self.sub_sub_version:
+        elif other.sub_version == self.sub_version and other.sub_sub_version > self.sub_sub_version:
             return True
         else:
             return False
 
     @staticmethod
     def from_file_name(file_name: str) -> VersionManager:
-        # TODO link to model naming convention/description
         split = file_name.split('-')
         if len(split) != 3:
-            raise ValueError('File format is incorrect. Make sure you use only 2 `-` in your model names.')
+            raise ValueError('File format is incorrect. Make sure you use only 2 `-` in your model names. '
+                             'Go to README.md to understand the file naming and versioning conventions.')
         return VersionManager(split[1])
 
+    # TODO rename and make as __str__ or something like this
     def tostr(self):
-        return "{}_{}_{}".format(self.main_version, self.sub_version, self.sub_sub_version)
+        return "{}.{}.{}".format(self.main_version, self.sub_version, self.sub_sub_version)
+
+    def to_file_str(self):
+        return "{}.{}.{}".format(self.main_version, self.sub_version, self.sub_sub_version)

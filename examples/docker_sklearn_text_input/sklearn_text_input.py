@@ -16,7 +16,7 @@ class SklearnTextInputServable(Servable):
 
         # loads model from source and checks whether prediction works
         # That's basically runtime testing. This is intended, as a core requirement is to enable the server to load
-        # arbitrary servables
+        # arbitrary local_servables
         self.init_model()
 
     def validate_input(self, samples: Union[str, List[str]]):

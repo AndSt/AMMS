@@ -1,25 +1,33 @@
 import os
 import joblib
+from enum import Enum
+
+import logging
 
 from abc import ABC, abstractmethod
 
 
+class ModelStatus(Enum):
+    NOT_LOADED = 'LOADED'
+    LOADING = 'LOADING'
+    LOADED = 'IS_LOADED'
+
+
 class ModelWrapper(ABC):
     def __init__(self, file_path):
-        self.loaded = False
-        if os.path.isfile('{}/{}'.format(file_path)) is False:
+        self.status = ModelStatus.NOT_LOADED
+        if os.path.isfile(file_path) is False:
             # TODO logging
+            logging.error('The model doesn\'t exists. Maybe the loader isn\'t finished loading.')
             return False
         try:
+            self.status = ModelStatus.LOADING
             with open("{}/{}".format(file_path), "rb") as handle:
                 self.model = joblib.load(handle)
                 self.test_predict()
-                self.loaded = True
+                self.status = ModelStatus.LOADED
         except Exception as e:
             print(e)  # TODO proper error handling
-
-    def validate_input(self):
-        return True
 
     def transform_input(self, input):
         return input

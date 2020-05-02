@@ -1,15 +1,22 @@
 
+# pycharm/jupyter/interpreter
 **.DS_Store
 **.idea/
 **__pycache__/
 **.pbz2
 **.ipynb_checkpoints
 
+# runtime data
 **.log
 **/logs
 **/models
 **.metaflow
 
-examples/retrained_model/shared_volume/*
+# tests
+.pytest_cache
+htmlcov
+.coverage
+
+examples/docker_compose_retraining/shared_volume/*
 
 

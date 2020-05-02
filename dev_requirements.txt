@@ -1,4 +1,8 @@
 # Requirements which are useful for development
 
+# testing
 pytest
+pytest-cov
+
+# utitlities
 jupyter

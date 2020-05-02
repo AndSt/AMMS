@@ -8,7 +8,7 @@ import time
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 
 class SimpleTextClassificationFlow(FlowSpec):
@@ -30,9 +30,9 @@ class SimpleTextClassificationFlow(FlowSpec):
     @step
     def create_model(self):
         self.clf = Pipeline([
-            ('vect', CountVectorizer()),
+            ('vect', CountVectorizer(max_features=5, max_df=5)),
             ('tfidf', TfidfTransformer()),
-            ('clf-svm', SGDClassifier(loss='hinge', penalty='l2', alpha=1e-3, max_iter=5, random_state=42))
+            ('clf-svm', DecisionTreeClassifier(max_features=1, max_depth=1, max_leaf_nodes=2, random_state=42))
         ])
         self.next(self.train)
 

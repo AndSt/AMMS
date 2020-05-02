@@ -1,3 +1,5 @@
+from typing import Union, List
+
 from src.model_wrapper import ModelWrapper
 from src.data_models.prediction_requests import TextPredictionRequest
 from src.data_models.prediciton_responses import PredictionResponse

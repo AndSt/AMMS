@@ -3,18 +3,21 @@ from __future__ import annotations
 from typing import Dict
 from enum import Enum
 
+import logging
+from fastapi.exceptions import RequestValidationError
+
 from src.model_wrapper import ModelWrapper
 from src.config import AspiredModel
 from src.version_manager import VersionManager
 from src.loader import Loader
+from src.utils import dynamic_model_creation
 
 
-class ServableStatus(Enum):
-    NOT_LOADED = 0
-    NOT_LOADABLE = 1
-    LOADING = 2
-    IDLE = 3
-    PREDICTION = 4
+class ServableStatus(str, Enum):
+    NOT_LOADED = 'NOT_LOADED'
+    LOADING = 'LOADING'
+    IDLE = 'IDLE'
+    PREDICTION = 'PREDITING'
 
 
 class ServableMetaData:
@@ -35,12 +38,12 @@ class ServableMetaData:
 
         model_name = split[0]  # get rid of _ character
         version = split[1]
-        date = split[2].replace('.pbz2')
+        date = split[2].replace('.pbz2', '')
 
         return ServableMetaData(model_name, version, date)
 
     def is_equal(self, servable_meta_data: ServableMetaData) -> bool:
-        if self.model_name == servable_meta_data.model_name and self.version.is_equal(
+        if self.model_name == servable_meta_data.model_name and self.version.__eq__(
                 servable_meta_data.version) and self.timestamp == servable_meta_data.timestamp:
             return True
 
@@ -50,7 +53,7 @@ class ServableMetaData:
         if servable_meta_data.model_name != self.model_name:
             return False
 
-        if servable_meta_data.is_equal(self.version):
+        if servable_meta_data.version.__eq__(self.version):
             if self.timestamp < servable_meta_data.timestamp:
                 return True
 
@@ -65,15 +68,14 @@ class ServableMetaData:
 
     def as_dict(self) -> Dict[str, str]:
         return {
-            "model_name": self.meta_data.model_name,
-            "version": self.meta_data.version.tostr(),
-            "train_date": self.meta_data.timestamp
+            "model_name": self.model_name,
+            "version": self.version.tostr(),
+            "train_date": self.timestamp
         }
 
 
 class Servable:
-    def __init__(self, aspired_model: AspiredModel, model_dir: str = '/app/data/servables'):
-
+    def __init__(self, aspired_model: AspiredModel, model_dir: str = '/app/data/local_servables'):
 
         self.model_dir = model_dir
         self.aspired_model = aspired_model
@@ -86,40 +88,42 @@ class Servable:
         self.update()
 
     def predict(self, input):
+        logging.info('Begin prediction')
         if self.status == ServableStatus.IDLE or self.status == ServableStatus.PREDICTION:
             self.status = ServableStatus.PREDICTION
             prediction = self.model.predict(input)
             self.status = ServableStatus.IDLE
-            return prediction
-        else:
             return {
-                'error': 'TODO write better error'
+                'meta_data': self.meta_data.as_dict(),
+                'pred': prediction
             }
+        raise RequestValidationError('No model available')  # TODO this error is totally wrong
 
     def update(self):
-        """Updates the currently loaded servables.
+        """Updates the currently loaded local_servables.
         Steps:
-        1) Retrieve all servables in the specified model repository
+        1) Retrieve all local_servables in the specified model repository
         2) Compute the newest available, compatible model version. (See TODO for a compatibiltiy description)
         3) Load model from remote repository via Loader class
         4) Switch the current and the newer model
         """
-        servable_files = self.loader.load_available_model_versions()
+        servable_files = self.loader.load_available_models()
+        if len(servable_files) == 0:
+            return
         servable_metas = [ServableMetaData.from_file_name(file_name=file_name) for file_name in servable_files]
         # Only update if there are available versions
-        if len(servable_metas) == 0:
-            return
 
-        newest = self.meta_data if self.meta_data is not None else servable_metas[0]
+        newest_meta_data = self.meta_data if self.meta_data is not None else servable_metas[0]
         for available_version in servable_metas:
-            if available_version.is_compatible_and_newer(newest):
-                newest = available_version
+            if available_version.is_compatible_and_newer(newest_meta_data):
+                newest_meta_data = available_version
 
-        if newest.is_equal(self.meta_data):
-            return
+        if self.meta_data is not None:
+            if newest_meta_data.is_equal(self.meta_data):
+                return
 
         old_status = self.status
-        file_name = newest.to_file_name()
+        file_name = newest_meta_data.to_file_name()
         did_load = self.loader.load(file_name=file_name)
         if did_load is False:
             if self.status != ServableStatus.PREDICTION:
@@ -129,14 +133,21 @@ class Servable:
 
         self.status = ServableStatus.LOADING
         file_path = '{}/{}'.format(self.model_dir, file_name)
-        model = ModelWrapper(file_path)
-        if model.loaded is False:
+        model = dynamic_model_creation(self.aspired_model.servable_name, file_path)
+
+        if model.is_loaded is False:
             self.status = old_status
         else:
             self.status = ServableStatus.IDLE
+            self.model = model
+            self.meta_data = newest_meta_data
 
     def meta_response(self):
+        request_format = self.model.request_format().schema() if self.model is not None else ''
+        response_format = self.model.request_format().schema() if self.model is not None else ''
         return {
             'status': self.status,
-            'meta_data': self.meta_data.as_dict()
+            'meta_data': self.meta_data.as_dict(),
+            'request_format': request_format,
+            'response_format': response_format
         }

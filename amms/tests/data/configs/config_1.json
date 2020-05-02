@@ -1,9 +1,9 @@
 [
   {
-    "model_name": "hello_world_clf",
+    "model_name": "simple_text",
     "aspired_version": "1.x",
     "load_type": "local",
     "load_url": "data/models",
-    "servable_name": "hello_world"
+    "servable_name": "sklearn_text_input"
   }
 ]

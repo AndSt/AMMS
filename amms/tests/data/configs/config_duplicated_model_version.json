@@ -1,0 +1,16 @@
+[
+  {
+    "model_name": "simple_text",
+    "aspired_version": "1.x",
+    "load_type": "local",
+    "load_url": "data/models",
+    "servable_name": "sklearn_text_input"
+  },
+  {
+    "model_name": "simple_text",
+    "aspired_version": "1.x",
+    "load_type": "local",
+    "load_url": "data/models",
+    "servable_name": "hello_world"
+  }
+]

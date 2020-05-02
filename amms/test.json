@@ -1,0 +1,20 @@
+{
+  "models": [
+    {
+      "status": "string",
+      "meta_data": {
+        "model_name": "string",
+        "version": "string",
+        "train_date": "string"
+      },
+      "request_format": [
+        "string",
+        "object"
+      ],
+      "response_format": [
+        "string",
+        "object"
+      ]
+    }
+  ]
+}

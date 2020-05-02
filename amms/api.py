@@ -1,24 +1,38 @@
 import time
 from typing import Union
+import logging
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi_utils.tasks import repeat_every
 
-from src.data_models import HealthStatusResponse, ModelMetaDataResponse, ModelsMetaDataResponse
+from src.data_models.standard import HealthStatusResponse, ModelMetaDataResponse, ModelsMetaDataResponse, ModelNotFoundResponse
 from src.model_manager import ModelManager
 from src.config import setup_logging
-import logging
+
+
+def model_not_found_response():
+    return {
+        404: {"model": ModelNotFoundResponse, "description": "Model not found."}
+    }
 
 app = FastAPI()
 manager = ModelManager()
 
 
 @app.on_event("startup")
+def load_models():
+    logging.info('Initialize local_servables.')
+    manager.init_servables()
+    for servable in manager.servables:
+        print(servable.meta_data)
+
+
 @repeat_every(seconds=10)  # 1 hour
-def reload_model() -> None:
+def reload_models() -> None:
     manager.update()
-    logging.info('First model load finished')
+    logging.info('Updated models')
 
 
 @app.get("/health_check", response_model=HealthStatusResponse)
@@ -35,54 +49,45 @@ async def health_check():
         return {'status': 'error', "message": e}
 
 
-# @app.get('/model_repository')
-# async def model_repository():
-#     if os.path.exists('/shared_volume'):
-#         return {
-#             'shared': 'exists',
-#             'path': '/shared_volume'
-#         }
-#     elif os.path.exists('../examples/retrained_model/shared_volume'):
-#         return {
-#             'shared': 'exists',
-#             'path': 'shared_volume/'
-#         }
-#     else:
-#         return {
-#             'shared': 'non-existent'
-#         }
-
-
-@app.get('/servables', response_model=ModelsMetaDataResponse)
+@app.get('/local_servables', response_model=ModelsMetaDataResponse)
 async def meta_data():
     result = manager.all_models_meta_data_response()
     logging.info(result)
     return result
 
 
-@app.get('/servables/{model_name}', response_model=ModelsMetaDataResponse)
-async def model_meta_data(model_name: str):
-    return manager.model_meta_data_response(model_name)
-
-
-@app.get('/servables/{model_name}', response_model=Union[ModelsMetaDataResponse, ModelMetaDataResponse])
+@app.get('/local_servables/{model_name}', #response_model=Union[ModelsMetaDataResponse, ModelMetaDataResponse],
+         responses=model_not_found_response())
 async def model_version_meta_data(model_name: str):
-    return manager.model_meta_data_response(model_name)
+    response = manager.model_meta_data_response(model_name)
+    if response is False:
+        response = {
+            'error_message': 'Model is not found',
+            'available_models': manager.all_models_meta_data_response()
+        }
+        return JSONResponse(status_code=404, content=response)
+    return response
 
 
-@app.get('/servables/{model_name}/{version}', response_model=ModelsMetaDataResponse)
+@app.get('/local_servables/{model_name}/{version}', response_model=ModelsMetaDataResponse,
+         responses=model_not_found_response())
 async def available_model(model_name: str, version: str):
-    result = manager.model_meta_data_response(model_name, version)
-    return result
+    response = manager.model_meta_data_response(model_name, version)
+    if response is False:
+        response = {
+            'error_message': 'Model or version is not found',
+            'available_models': manager.all_models_meta_data_response()
+        }
+        return JSONResponse(status_code=404, content=response)
+    return response
 
 
 @app.post('/predict/')
 async def predict(input):
-    text = input.text
     start_time = time.time()
-    result = manager.model_predict(text)
+    result = manager.predict(input)
     result.update({'time': time.time() - start_time})
-
+    # TODO logging
     return result
 
 

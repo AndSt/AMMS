@@ -2,11 +2,12 @@ import logging
 
 from src.config import Config
 from src.servable_base import Servable
+from src.data_models.standard import ModelNotFoundResponse
 
 
 class ModelManager:
-    def __init__(self):
-        self.config = Config()
+    def __init__(self, config_file: str = 'data/config/servables.json', model_dir: str = 'data/models'):
+        self.config = Config(config_file=config_file, model_dir=model_dir)
         self.servables = []
         logging.info('Load servables')
 
@@ -15,6 +16,7 @@ class ModelManager:
 
     def update(self):
         # TODO error handling; testing
+        print('update')
         for servable in self.servables:
             servable.update()
 
@@ -27,35 +29,21 @@ class ModelManager:
                 continue
             if version is None or version == servable.meta_data.version.tostr():
                 return servable.predict(input)
-        return {
-            'model_request': {
-                'model_name': model_name,
-                'version': version
-            },
-            'available_models': self.all_models_meta_data_response()
-        }
+        raise ModelNotFoundResponse('No model available')
 
     def all_models_meta_data_response(self):
         models = []
-        for loaded_model in self.servables:
-            models.append(loaded_model.as_dict())
-        return {'servables': models}
+        for servable in self.servables:
+            models.append(servable.meta_response())
+        print(models)
+        return {'models': models}
 
     def model_meta_data_response(self, model_name: str = None, version: str = None):
-        result = []
-        # TODO error handling, if version is false
-        if model_name is None or isinstance(model_name, str) is False:
-            logging.info('User didn\'t specify the model name correctly')
-            raise ValueError('Model needs to be specified.')
 
-        for servable_model_name, servable_version in self.servables:
-            if servable_model_name != model_name:
+        for servable in self.servables:
+            if model_name != servable.meta_data.model_name:
                 continue
-            if version is None:
-                result.append(self.servables[(servable_model_name, servable_version)])
-            elif version == servable_model_name:
-                result.append(self.servables[(servable_model_name, servable_version)])
+            if version is None or servable.meta_data.version == version:
+                return servable.meta_response()
 
-        if len(self.servables) == 1:
-            return result[0]
-        return result
+        return False
