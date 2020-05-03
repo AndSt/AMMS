@@ -1,8 +1,8 @@
 [
   {
-    "model_name": "hello_world_clf",
+    "model_name": "hello_world",
     "aspired_version": "1.x",
-    "load_type": "local",
+    "load_type": "SHARE",
     "load_url": "data/models",
     "servable_name": "hello_world"
   }

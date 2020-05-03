@@ -5,39 +5,7 @@ import logging
 from typing import Dict
 
 import json
-
-from src.version_manager import VersionManager
-
-
-class AspiredModel:
-    """Container holding information about a model version we want to load and how to load it.
-    Aspired version format:
-
-    """
-
-    def __init__(self, model_name: str, aspired_version: str, load_type: str, load_url: str, servable_name: str):
-        self.model_name = model_name
-        self.aspired_version = VersionManager(aspired_version)
-        self.load_type = load_type
-        self.load_url = load_url
-        self.servable_name = servable_name
-
-    @staticmethod
-    def from_json(json_dict: Dict[str, str]) -> AspiredModel:
-        fields = ['model_name', 'aspired_version', 'load_type', 'load_url', 'servable_name']
-        for field in fields:
-            if field not in json_dict:
-                raise ValueError('The configuration needs to hold a parameter `{}`.'.format(field))
-        return AspiredModel(json_dict['model_name'], json_dict['aspired_version'], json_dict['load_type'],
-                            json_dict['load_url'], json_dict['servable_name'])
-
-    # def __eq__(self, other: AspiredModel) -> bool:
-    #     # TODO properpy do this
-    #     if self.model_name == other.model_name and self.aspired_version == other.aspired_version and \
-    #             self.load_type == other.load_type and self.load_url == other.load_url and \
-    #             self.servable_name == other.servable_name:
-    #         return True
-    #     return False
+from src.version_manager import AspiredModel
 
 
 class Config:

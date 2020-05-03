@@ -15,19 +15,23 @@ class ModelStatus(Enum):
 
 class ModelWrapper(ABC):
     def __init__(self, file_path):
+        self.file_path = file_path
         self.status = ModelStatus.NOT_LOADED
         if os.path.isfile(file_path) is False:
-            # TODO logging
             logging.error('The model doesn\'t exists. Maybe the loader isn\'t finished loading.')
-            return False
         try:
             self.status = ModelStatus.LOADING
-            with open("{}/{}".format(file_path), "rb") as handle:
+            with open("{}".format(file_path), "rb") as handle:
                 self.model = joblib.load(handle)
                 self.test_predict()
                 self.status = ModelStatus.LOADED
+        except FileNotFoundError:
+            self.status = ModelStatus.NOT_LOADED
+            raise FileNotFoundError('Model is not found under: {}'.format(file_path))
         except Exception as e:
-            print(e)  # TODO proper error handling
+            self.status = ModelStatus.NOT_LOADED
+            logging.error(e)
+            raise Exception(str(e))
 
     def transform_input(self, input):
         return input

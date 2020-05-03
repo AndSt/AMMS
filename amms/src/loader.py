@@ -5,7 +5,7 @@ from typing import List
 import logging
 import joblib
 
-from src.config import AspiredModel
+from src.version_manager import AspiredModel, LoadType
 
 
 class LoaderStatus(Enum):
@@ -21,7 +21,7 @@ class Loader:
         self.aspired_model = aspired_model
 
     def load_available_models(self) -> List[str]:
-        if self.aspired_model.load_type == 'shared' or self.aspired_model.load_type == 'local':
+        if self.aspired_model.load_type == LoadType.shared or self.aspired_model.load_type == LoadType.local:
             return self.load_available_models_from_folder()
 
     def load_available_models_from_folder(self) -> List[str]:
@@ -32,7 +32,7 @@ class Loader:
 
     def load(self, file_name: str):
         self.status = LoaderStatus.LOADING
-        if self.aspired_model.load_type == 'shared':
+        if self.aspired_model.load_type == LoadType.shared:
             self.load_from_folder(file_name)
 
         self.status = LoaderStatus.NOT_LOADING
@@ -47,9 +47,7 @@ class Loader:
                 with open(target_path, 'wb') as local_handle:
                     joblib.dump(model, local_handle)
         except Exception as e:
-            # TODO logging
             logging.error('The loader wasn\'t able to load the specified file "{}, because: {}".'.format(file_name, e))
-            print(e.with_traceback())
 
     # def load_from_s3(self):
     #     pass

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, Dict
+from enum import Enum
 
 
 class VersionManager:
@@ -17,7 +18,6 @@ class VersionManager:
 
         # Scenario 1: Only main version number is given
         if version_str.isdigit():
-            print('v', version_str)
             self.main_version = int(version_str)
             self.sub_version = 0
             self.sub_sub_version = 0
@@ -105,9 +105,59 @@ class VersionManager:
                              'Go to README.md to understand the file naming and versioning conventions.')
         return VersionManager(split[1])
 
-    # TODO rename and make as __str__ or something like this
-    def tostr(self):
+    def __str__(self):
         return "{}.{}.{}".format(self.main_version, self.sub_version, self.sub_sub_version)
 
     def to_file_str(self):
-        return "{}.{}.{}".format(self.main_version, self.sub_version, self.sub_sub_version)
+        return "{}_{}_{}".format(self.main_version, self.sub_version, self.sub_sub_version)
+
+
+# Substitute load_type str with enum
+class LoadType(Enum):
+    local = 'LOCAL'
+    shared = 'SHARE'
+
+
+class AspiredModel:
+    """Container holding information about a model version we want to load and how to load it.
+    Aspired version format:
+
+    """
+
+    def __init__(self, model_name: str, aspired_version: str, load_type: str, load_url: str, servable_name: str):
+        self.model_name = model_name
+        self.aspired_version = VersionManager(aspired_version)
+        self.load_type = LoadType(load_type)
+        self.load_url = load_url
+
+        self.servable_name = servable_name
+
+    @staticmethod
+    def from_json(json_dict: Dict[str, str]) -> AspiredModel:
+        fields = ['model_name', 'aspired_version', 'load_type', 'load_url', 'servable_name']
+        for field in fields:
+            if field not in json_dict:
+                raise ValueError('The configuration needs to hold a parameter `{}`.'.format(field))
+
+        return AspiredModel(json_dict['model_name'], json_dict['aspired_version'], json_dict['load_type'],
+                            json_dict['load_url'], json_dict['servable_name'])
+
+    def is_compatible(self, file_name: str) -> bool:
+        if isinstance(file_name, str) is False:
+            raise ValueError('is_compatible only accepts type `str`, given is {} of type {}'.format(file_name, type(file_name)))
+        split = file_name.split('-')
+        if split[0] == self.model_name:
+            return True  # TODO
+        else:
+            return False
+
+    # TODO
+    # - this equality test
+    # - test whether 2 aspire same version here?
+    # def __eq__(self, other: AspiredModel) -> bool:
+    #
+    #     if self.model_name == other.model_name and self.aspired_version == other.aspired_version and \
+    #             self.load_type == other.load_type and self.load_url == other.load_url and \
+    #             self.servable_name == other.servable_name:
+    #         return True
+    #     return False

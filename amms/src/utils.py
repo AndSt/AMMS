@@ -27,6 +27,9 @@ def dynamic_model_creation(servable_name: str, file_name: str, servable_path: st
     module = importlib.import_module(servable_path)
 
     class_name = underscore_to_camelcase(servable_name) + 'Model'
+    print(class_name)
+    print(module)
+
     class_ = getattr(module, class_name)
     instance = class_(file_name)
 

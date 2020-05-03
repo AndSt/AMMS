@@ -25,8 +25,6 @@ manager = ModelManager()
 def load_models():
     logging.info('Initialize local_servables.')
     manager.init_servables()
-    for servable in manager.servables:
-        print(servable.meta_data)
 
 
 @repeat_every(seconds=10)  # 1 hour
@@ -93,4 +91,4 @@ async def predict(input):
 
 if __name__ == "__main__":
     setup_logging()
-    uvicorn.run("api:app", host="0.0.0.0", port=5000, log_level="info")
+    uvicorn.run("api:app", host="0.0.0.0", port=8090, log_level="debug")

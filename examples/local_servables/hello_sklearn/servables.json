@@ -2,21 +2,21 @@
   {
     "model_name": "simple_twenty_news_clf",
     "aspired_version": "1.x",
-    "load_type": "shared",
+    "load_type": "SHARE",
     "load_url": "/shared_volume",
     "servable_name": "HelloWorldModel"
   },
   {
     "model_name": "simple_twenty_news_clf",
     "aspired_version": "2.x",
-    "load_type": "shared",
+    "load_type": "SHARE",
     "load_url": "/shared_volume",
     "servable_name": "HelloWorldModel"
   },
   {
     "model_name": "simple_twenty_news_clf",
     "aspired_version": "2.x",
-    "load_type": "local",
+    "load_type": "SHARE",
     "load_url": "data/models",
     "servable_name": "HelloWorldModel"
   }

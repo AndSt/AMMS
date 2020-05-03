@@ -35,7 +35,7 @@ class ModelManager:
         models = []
         for servable in self.servables:
             models.append(servable.meta_response())
-        print(models)
+        print('Models', models)
         return {'models': models}
 
     def model_meta_data_response(self, model_name: str = None, version: str = None):

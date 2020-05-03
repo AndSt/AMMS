@@ -1,9 +1,13 @@
-from src.model_wrapper import ModelWrapper
+from src.model_wrapper import ModelWrapper, ModelStatus
 from src.data_models.prediction_requests import TextPredictionRequest
 from src.data_models.prediciton_responses import PredictionResponse
 
 
 class HelloWorldModel(ModelWrapper):
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.status = ModelStatus.LOADED
+        # super(HelloWorldModel, self).__init__(file_path=file_path)
 
     def predict(self, samples: TextPredictionRequest):
         # Here is supposed to be a prediction
