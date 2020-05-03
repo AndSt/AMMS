@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import logging
-from typing import Dict
+import logging.config as logging_config
 
 import json
 from src.version_manager import AspiredModel
@@ -22,7 +22,7 @@ class Config:
 
         self.aspired_models = []
         for aspired_version in data:
-            self.aspired_models.append(AspiredModel.from_json(aspired_version))
+            self.aspired_models.append(AspiredModel.from_json_dict(aspired_version))
         if len(self.aspired_models) == 0:
             raise RuntimeError('No model is specified. Thus no model is served.')
 
@@ -34,16 +34,16 @@ class Config:
                     raise RuntimeError('A model with the same top level version cannot be deployed twice.')
 
 
-def setup_logging(path='data/config/logging.json', default_log_level=logging.INFO, env_key='LOG_CFG_FILE'):
+# TODO test such that main file is used
+def setup_logging(path='data/config/logging.json'):
     """Setup logging configuration
     """
-    value = os.getenv(env_key, None)
-    if value and value.endswith('.json') and os.path.exists(value):
-        path = value
-
+    # value = os.getenv(env_key, None)
+    # if value and value.endswith('.json') and os.path.exists(value):
+    #     path = value
     if os.path.exists(path):
         with open(path, 'r') as f:
             config = json.load(f)
-        logging.config.dictConfig(config)
+        logging_config.dictConfig(config)
     else:
-        logging.basicConfig(level=default_log_level)
+        raise FileNotFoundError('The path to the logging configuration doesn\'t exist')

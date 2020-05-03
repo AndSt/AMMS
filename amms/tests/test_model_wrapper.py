@@ -1,12 +1,11 @@
 import os
 
 from src.model_wrapper import ModelWrapper
-from src.data_models.prediction_requests import TextPredictionRequest
-from src.data_models.prediciton_responses import PredictionResponse
+from src.data_models import TextPredictionRequest, LabelScoreResponse
 
 # TODO all model tests
 dir_path = os.path.dirname(os.path.realpath(__file__))
-model_path = '{}/data/loaded/hello_world-1_0_0-1234.pbz2'.format(dir_path)
+model_path = '{}/data/loaded/hello_world-1_0_1-1234.pbz2'.format(dir_path)
 
 
 class PassingModel(ModelWrapper):
@@ -25,7 +24,7 @@ class PassingModel(ModelWrapper):
         return TextPredictionRequest
 
     def response_format(self):
-        return PredictionResponse
+        return LabelScoreResponse
 
 
 class NoRequestFormatModel(ModelWrapper):
@@ -46,7 +45,7 @@ class NoRequestFormatModel(ModelWrapper):
             return False
 
     def response_format(self):
-        return PredictionResponse
+        return LabelScoreResponse
 
 
 class TestPredictionNoBoolModel(ModelWrapper):
@@ -67,16 +66,11 @@ class TestPredictionNoBoolModel(ModelWrapper):
         return TextPredictionRequest
 
     def response_format(self):
-        return PredictionResponse
+        return LabelScoreResponse
 
 
 def test_passing_model():
-    try:
-        model = PassingModel(model_path)
-        assert True
-    except Exception as e:
-        print(e)
-        assert False
+    model = PassingModel(model_path)
 
 
 def test_no_request_format_model():

@@ -1,4 +1,6 @@
-from src.version_manager import VersionManager
+import pytest
+
+from src.version_manager import VersionManager, AspiredModel
 
 
 # TODO: Add more examples: How to handle .x comparisons?
@@ -36,7 +38,6 @@ def test_is_compatible_and_newer():
     for example in examples:
         version = VersionManager(example[0])
         other = VersionManager(example[1])
-        print(version.tostr(), other.tostr(), example[2])
         assert version.is_compatible_and_newer(other) == example[2]
 
     x_test = ('1.x', '1.5.7')
@@ -57,4 +58,36 @@ def test_from_file_name():
         assert version.__eq__(VersionManager(example[1]))
         assert version.__eq__(example[1])
 
+
+@pytest.fixture()
+def aspired_model_dict():
+    return {
+        'model_name': 'test_name',
+        'aspired_version': '1.x',
+        'load_type': 'SHARE',
+        'load_url': 'data/model_load_dir',
+        'servable_name': 'hello_world'
+    }
+
+
+def test_aspired_model_from_file_name(aspired_model_dict):
+    with pytest.raises(ValueError):
+        AspiredModel.from_json_dict({})
+        bad_json_dict = aspired_model_dict.copy()
+        bad_json_dict['name'] = 1234
+        AspiredModel.from_json_dict(bad_json_dict)
+    try:
+        am = AspiredModel.from_json_dict(aspired_model_dict)
+        assert True
+    except:
+        assert False
+
+
 # TODO test stringifiers
+
+def test_aspired_model_is_compatible(aspired_model_dict):
+    am = AspiredModel.from_json_dict(aspired_model_dict)
+    compatible_file_name = 'test_name-1.2.3-1234.pbz2'
+    incompatible_file_name = 'test_name-1'
+
+

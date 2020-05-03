@@ -19,4 +19,4 @@ class ServableMetaDataTest(unittest.TestCase):
         self.assertFalse(self.s1.is_equal(self.s6))
 
 
-def test_servable_meta_is_equal():
+# def test_servable_meta_is_equal():

@@ -21,10 +21,9 @@ class ModelWrapper(ABC):
             logging.error('The model doesn\'t exists. Maybe the loader isn\'t finished loading.')
         try:
             self.status = ModelStatus.LOADING
-            with open("{}".format(file_path), "rb") as handle:
-                self.model = joblib.load(handle)
-                self.test_predict()
-                self.status = ModelStatus.LOADED
+            self.load()
+            self.test_predict()
+            self.status = ModelStatus.LOADED
         except FileNotFoundError:
             self.status = ModelStatus.NOT_LOADED
             raise FileNotFoundError('Model is not found under: {}'.format(file_path))
@@ -32,6 +31,10 @@ class ModelWrapper(ABC):
             self.status = ModelStatus.NOT_LOADED
             logging.error(e)
             raise Exception(str(e))
+
+    def load(self):
+        with open("{}".format(self.file_path), "rb") as handle:
+            self.model = joblib.load(handle)
 
     def transform_input(self, input):
         return input

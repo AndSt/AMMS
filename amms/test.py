@@ -1,11 +1,8 @@
-from src.data_models.prediciton_responses import PredictionResponse
-from src.data_models.standard import ModelsMetaDataResponse
+from src.data_models import LabelScoreResponse
 import json
 # prediction_request_data_models()
 
-import pydantic
-
-di = PredictionResponse.schema()
+di = LabelScoreResponse.schema()
 
 
 # PredictionResponse.
@@ -79,4 +76,4 @@ def def_to_exmpl(data, schema):
 #
 # def gen_array(arr):
 #print(ModelsMetaDataResponse.schema_json())
-gen_example(PredictionResponse)
+gen_example(LabelScoreResponse)

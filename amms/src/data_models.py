@@ -1,5 +1,6 @@
-from typing import List, Union, Dict
-from pydantic import BaseModel
+from typing import List, Union, Dict, Tuple
+from pydantic.main import BaseModel
+
 from src.servable_base import ServableStatus
 
 
@@ -23,6 +24,24 @@ class ModelMetaDataResponse(BaseModel):
 
 class ModelsMetaDataResponse(BaseModel):
     models: List[ModelMetaDataResponse]
+
+
+class ModelRequest(BaseModel):
+    model_name: str
+    version: str
+
+
+class PredictionRequest(BaseModel):
+    model: ModelRequest
+
+
+class TextPredictionRequest(PredictionRequest):
+    input: Union[str, List[str]]
+
+
+class LabelScoreResponse(BaseModel):
+    preds: List[Union[int, str]]
+    pred_probas: List[List[Tuple[Union[int, str], float]]]
 
 
 class ModelNotFoundResponse(BaseModel):

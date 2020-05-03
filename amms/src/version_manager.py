@@ -60,8 +60,7 @@ class VersionManager:
             self.is_exact_specification = True
             return
 
-            # Scenario 4: All levels are specified, but maybe as 'x'
-
+        # Scenario 4: All levels are specified, but maybe as 'x'
         if version_str[2] == 'x':
             self.sub_sub_version = 'x'
             self.is_exact_specification = False
@@ -82,6 +81,7 @@ class VersionManager:
         return True
 
     def is_compatible_and_newer(self, other: Union[str, VersionManager]) -> bool:
+        # TODO rewrite; what does compatible and newer mean anyway??
         if isinstance(other, str):
             other = VersionManager(other)
 
@@ -133,18 +133,24 @@ class AspiredModel:
         self.servable_name = servable_name
 
     @staticmethod
-    def from_json(json_dict: Dict[str, str]) -> AspiredModel:
+    def from_json_dict(json_dict: Dict[str, str]) -> AspiredModel:
         fields = ['model_name', 'aspired_version', 'load_type', 'load_url', 'servable_name']
         for field in fields:
             if field not in json_dict:
                 raise ValueError('The configuration needs to hold a parameter `{}`.'.format(field))
+            if isinstance(json_dict[field], str) is False:
+                raise ValueError(
+                    'Field `{}` has to be of type `str`, but is `{}`.'.format(field, type(json_dict[field])))
 
         return AspiredModel(json_dict['model_name'], json_dict['aspired_version'], json_dict['load_type'],
                             json_dict['load_url'], json_dict['servable_name'])
 
     def is_compatible(self, file_name: str) -> bool:
+        # TODO maybe use as Servable MetaData -> two way import maybe problem
         if isinstance(file_name, str) is False:
-            raise ValueError('is_compatible only accepts type `str`, given is {} of type {}'.format(file_name, type(file_name)))
+            raise ValueError(
+                'is_compatible only accepts type `str`, given is {} of type {}'.format(file_name, type(file_name)))
+
         split = file_name.split('-')
         if split[0] == self.model_name:
             return True  # TODO

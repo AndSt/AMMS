@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional
 from enum import Enum
 
 import logging
@@ -17,7 +17,7 @@ class ServableStatus(str, Enum):
     NOT_LOADED = 'NOT_LOADED'
     LOADING = 'LOADING'
     IDLE = 'IDLE'
-    PREDICTION = 'PREDITING'
+    PREDICTING = 'PREDICTING'
 
 
 class ServableMetaData:
@@ -92,7 +92,7 @@ class ServableMetaData:
     def as_dict(self) -> Dict[str, str]:
         return {
             "model_name": self.model_name,
-            "version": self.version.tostr(),
+            "version": str(self.version),
             "train_date": self.timestamp
         }
 
@@ -102,7 +102,7 @@ class Servable:
         logging.debug('Initialize servable {}'.format(aspired_model.model_name))
         self.model_dir = model_dir
         self.aspired_model = aspired_model
-        self.loader = Loader(aspired_model)
+        self.loader = Loader(aspired_model=aspired_model, model_dir=model_dir)
 
         self.meta_data: ServableMetaData = None
         self.model: ModelWrapper = None
@@ -112,14 +112,11 @@ class Servable:
 
     def predict(self, input):
         logging.debug('Begin prediction')
-        if self.status == ServableStatus.IDLE or self.status == ServableStatus.PREDICTION:
-            self.status = ServableStatus.PREDICTION
-            prediction = self.model.predict(input)
+        if self.status == ServableStatus.IDLE or self.status == ServableStatus.PREDICTING:
+            self.status = ServableStatus.PREDICTING
+            response = self.model.predict(input)
             self.status = ServableStatus.IDLE
-            return {
-                'meta_data': self.meta_data.as_dict(),
-                'pred': prediction
-            }
+            return response
         raise RequestValidationError('No model available')  # TODO this error is totally wrong
 
     def update(self):
@@ -131,15 +128,16 @@ class Servable:
         4) Switch the current and the newer model
         """
 
-        logging.debug('Update servable {}, version {}'.format(self.aspired_model.model_name, str(self.aspired_model.aspired_version)))
+        logging.debug('Update servable {}, version {}'.format(self.aspired_model.model_name,
+                                                              str(self.aspired_model.aspired_version)))
         servable_files = self.loader.load_available_models()
-        print('hier0')
+
         if len(servable_files) == 0:
             logging.debug('Servable {} has no available models'.format(self.aspired_model.model_name))
             return
         servable_metas = [ServableMetaData.from_file_name(file_name=file_name) for file_name in servable_files]
         # Only update if there are available versions
-        print('hier')
+
         if self.meta_data is None:
             newest_meta_data = servable_metas[0].compatible_newest(servable_metas[1:])
             if newest_meta_data is None:
@@ -149,31 +147,40 @@ class Servable:
 
         if newest_meta_data is None:
             return
-        print('hier2')
 
         old_status = self.status
-
         file_name = newest_meta_data.to_file_name()
         try:
             self.loader.load(file_name=file_name)
-        except:
+        except Exception as e:
+            logging.error('Error during loading of model: {}'.format(e))
             pass
-        print('hier3')
         # TODO optimize status behavior to prepare logging
         self.status = ServableStatus.LOADING
         file_path = '{}/{}'.format(self.model_dir, file_name)
         model = dynamic_model_creation(self.aspired_model.servable_name, file_path)
 
         if model.status == ModelStatus.NOT_LOADED:
-            logging.error('MOdelstatus scheisse')
+            # TODO proper error handling here
+            logging.error('Modelstatus scheisse')
             self.status = old_status
         else:
             self.status = ServableStatus.IDLE
             self.model = model
             self.meta_data = newest_meta_data
 
+    @staticmethod
+    def newest_servable(servables: List[Servable]):
+
+        # TODO has to be implemented and tested on lower level; compatibility logic might make sense
+        # newest = servables[0]
+        # for servable in servables:
+        #     if servable.meta_data.version > newest.meta_data.version:
+        #         newest = servable
+        # return newest
+        return servables[0]
+
     def meta_response(self):
-        print('status', self.status)
         request_format = self.model.request_format().schema() if self.model is not None else ''
         response_format = self.model.request_format().schema() if self.model is not None else ''
         return {

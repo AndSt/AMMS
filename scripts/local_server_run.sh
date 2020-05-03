@@ -20,8 +20,8 @@ mkdir -p "${AMMS_HOME}/amms/src/servables"
 rm "${AMMS_HOME}/amms/data/config/servables.json"
 
 cp -r $servable_folder/*.py $AMMS_HOME/amms/src/servables
-cp -r $servable_folder/*.pbz2 $AMMS_HOME/amms/data/models
+cp -r $servable_folder/*.pbz2 $AMMS_HOME/amms/data/model_load_dir
 cp "${servable_folder}/servables.json" $AMMS_HOME/amms/data/config
 
 cd $AMMS_HOME/amms || exit
-uvicorn api:app --reload --port 8090 --host 0.0.0.0 --log-level debug
+python api.py

@@ -1,14 +1,5 @@
 import importlib
-
-
-# def is_int(text: str) -> bool:
-#     if isinstance(text, str) is False:
-#         raise ValueError('No string given: {}'.format(text))
-#     try:
-#         int(text)
-#         return True
-#     except ValueError:
-#         return False
+from typing import List, Union, Tuple
 
 
 def underscore_to_camelcase(value: str) -> str:
@@ -23,19 +14,26 @@ def underscore_to_camelcase(value: str) -> str:
 
 def dynamic_model_creation(servable_name: str, file_name: str, servable_path: str = 'src.servables'):
     servable_path = '{}.{}'.format(servable_path, servable_name)
+    class_name = underscore_to_camelcase(servable_name) + 'Model'
 
     module = importlib.import_module(servable_path)
-
-    class_name = underscore_to_camelcase(servable_name) + 'Model'
-    print(class_name)
-    print(module)
-
     class_ = getattr(module, class_name)
     instance = class_(file_name)
 
     return instance
 
-# def prediction_data_models(servable_path: str = 'src.local_servables'):
+
+def format_class_probas(classes: List[str], pred_probas: List[List[float]]) -> List[List[Tuple[str, int]]]:
+    classes = [str(cl) for cl in classes]
+    pred_probas = [[float(proba) for proba in pred] for pred in pred_probas]
+    response = []
+    for pred_proba in pred_probas:
+        response.append(list(zip(classes, pred_proba)))
+
+    return response
+
+
+    # def prediction_data_models(servable_path: str = 'src.local_servables'):
 #     config = Config()
 #
 #     servable_names = []
