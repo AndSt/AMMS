@@ -15,10 +15,12 @@ class SimpleTextClassificationFlow(FlowSpec):
 
     @step
     def start(self):
-        self.model_name = 'simple_twenty_news_clf'
-        self.model_version = '1_0_1'
+        self.model_name = 'simple_text'
+        self.model_version = '1_0_5'
 
         self.train_dir = os.environ['TRAIN_DIR']
+        self.model_save_dir = '/shared_volume'
+        print('Store dir: {}'.format(self.model_save_dir))
         self.next(self.load_data)
 
     @step
@@ -50,12 +52,12 @@ class SimpleTextClassificationFlow(FlowSpec):
 
     @step
     def save_model(self):
-        data_path = '{}/data'.format(self.train_dir)
-        if os.path.isdir(data_path) is False:
-            os.mkdir(data_path)
+        if not os.path.isdir(self.model_save_dir):
+            os.mkdir(self.model_save_dir)
 
-        file_name = '{}-{}-{}'.format(self.model_name, self.model_version, time.time())
-        with open('{}/{}.pbz2'.format(data_path, file_name), 'wb') as handle:
+        file_name = '{}-{}-{}.pbz2'.format(self.model_name, self.model_version, time.time())
+        print('Save at: {}/{}'.format(self.model_save_dir, file_name))
+        with open('{}/{}'.format(self.model_save_dir, file_name), 'wb') as handle:
             joblib.dump(self.clf, handle)
         self.next(self.end)
 

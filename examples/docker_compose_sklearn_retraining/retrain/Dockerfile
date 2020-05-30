@@ -22,13 +22,14 @@ RUN apt-get update&& apt-get install -y curl dumb-init python3-dev build-essenti
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
-ADD src/crontab.sample /etc/crontab
-
 RUN mkdir -p /retrain/data
 COPY src/requirements.txt /retrain/
 RUN pip3 install -r /retrain/requirements.txt
 # copy train.py as last, as we have changes here
 COPY src/train.py /retrain/
+
+ADD src/crontab.sample /etc/crontab
+
 
 
 CMD [ "/usr/local/bin/supercronic", "/etc/crontab" ]

@@ -3,7 +3,7 @@ import pytest
 from typing import List
 
 from src.config import AspiredModel
-from src.loader import Loader
+from src.loader import Loader, LocalLoader, LoadType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 model_dir = '{}/data/loaded'.format(dir_path)
@@ -21,12 +21,30 @@ def aspired_models() -> List[AspiredModel]:
 @pytest.fixture()
 def loaders(aspired_models) -> List[Loader]:
     asp_1, asp_2 = aspired_models
-    return Loader(asp_1, model_dir), Loader(asp_2, model_dir)
+    return LocalLoader(asp_1, model_dir), LocalLoader(asp_2, model_dir)
 
 
 @pytest.fixture()
 def file_names() -> List[str]:
     return ['hello_world-1_0_1-1234.pbz2', 'simple_text-1_0_1-1588436916.135168.pbz2']
+
+
+def test_from_aspired_model(aspired_models):
+    asp_1, asp_2 = aspired_models
+    asp_1.load_type = LoadType.local
+    l = Loader.from_aspired_model(asp_1, '{}/data/model_load_dir'.format(dir_path))
+    asp_2.load_type = 'TEST'
+    with pytest.raises(NotImplementedError):
+        l = Loader.from_aspired_model(asp_2, '{}/data/model_load_dir'.format(dir_path))
+
+
+def test_abstract_methods(aspired_models, file_names):
+    asp_1, asp_2 = aspired_models
+    l = Loader(asp_1, '{}/data/model_load_dir'.format(dir_path))
+    with pytest.raises(NotImplementedError):
+        l.load_available_models()
+    with pytest.raises(NotImplementedError):
+        l.load(file_names[0])
 
 
 def test_loader_dir_not_found(aspired_models):

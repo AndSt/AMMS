@@ -113,11 +113,16 @@ foo@bar:~$ --cov=amms/src --cov-report html amms/tests # create HTML files showi
 
 ### Build you own servables:
 
-
 ### Techstack
 
 - FastAPI
 - FastAPI utils
 - Docker
 
+
+## Number of lines of code:
+
+````shell script
+foo@bar:~$ 
+````
 

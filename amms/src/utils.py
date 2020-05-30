@@ -1,5 +1,6 @@
 import importlib
-from typing import List, Union, Tuple
+from typing import List, Tuple
+import logging
 
 
 def underscore_to_camelcase(value: str) -> str:
@@ -33,7 +34,60 @@ def format_class_probas(classes: List[str], pred_probas: List[List[float]]) -> L
     return response
 
 
-    # def prediction_data_models(servable_path: str = 'src.local_servables'):
+def pydantic_class_to_example(pydantic_class):
+    schema = pydantic_class.schema()
+    print(schema)
+    example = {}
+    properties = schema.get('properties')
+    for property in properties:
+        prop = properties.get(property)
+        example[property] = dig_in(prop, schema)
+    return example
+
+
+def dig_in(property, schema):
+    print(property)
+    if 'type' not in property:
+        if "$ref" in property:
+            pydantic_model = property['$ref'].split('/')[-1]
+            return get_definition(pydantic_model, schema)
+    if property.get('type', False) == 'array':
+        return [
+            dig_in(property.get('items'), schema)
+        ]
+    return property['type']
+    return ''
+
+
+def get_definition(pydantic_model, schema):
+    definition = schema.get('definitions').get(pydantic_model)
+    return definition_to_exmple(definition, schema)
+
+
+def definition_to_exmple(data, schema):
+    if '$ref' in data:
+        pydantic_model = property['$ref'].split('/')[-1]
+        return get_definition(pydantic_model, schema)
+    if 'anyOf' in data:
+        anys = []
+        for any in data['anyOf']:
+            anys.append(any['type'])
+        return anys
+    if 'type' not in data:
+        logging.error('What is this: {}'.format(data))
+    definition_type = data['type']
+    if definition_type == 'object':
+        ret = {}
+        for property in data['properties']:
+            ret[property] = definition_to_exmple(data['properties'][property], schema)
+        return ret
+    elif definition_type == 'array':
+        return []
+    else:
+        logging.debug('type: {}'.format(type(definition_type)))
+        return definition_type
+
+# def prediction_data_models(servable_path: str = 'src.local_servables'):
 #     config = Config()
 #
 #     servable_names = []

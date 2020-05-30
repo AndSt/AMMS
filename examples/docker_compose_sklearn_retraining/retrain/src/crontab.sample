@@ -1,2 +1,3 @@
 # Run every 2 seconds
-*/2 * * * * * * echo "Was geht ab"
+*/30 * * * * * * python /retrain/train.py run
+# */30 * * * * * * ls /shared_volume

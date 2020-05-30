@@ -11,10 +11,5 @@ def test_init():
     mm = ModelManager(config_file, model_dir)
 
 
-def test_init_servables():
-    mm = ModelManager(config_file, model_dir)
-    mm.init_servables()
-
-
 def test_predict():
     pass

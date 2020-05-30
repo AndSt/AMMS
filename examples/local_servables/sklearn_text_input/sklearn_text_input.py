@@ -4,7 +4,7 @@ import numpy as np
 import logging
 
 from src.model_wrapper import ModelWrapper
-from src.data_models import TextPredictionRequest, LabelScoreResponse
+from src.data_models import TextRequest, LabelScoreResponse
 from src.utils import format_class_probas
 
 
@@ -20,8 +20,9 @@ class SklearnTextInputModel(ModelWrapper):
         # TODO error handling; Do we have to do this or can we deal with this with pedantic?? aka. how to do dynamic pydantic class
         return True
 
-    def predict(self, samples: TextPredictionRequest):
+    def predict(self, samples: TextRequest):
         self.validate_input(samples)
+        samples = samples.examples
         if isinstance(samples, str):
             samples = [samples]
         # TODO check whether list, np.array, etc.
@@ -44,7 +45,7 @@ class SklearnTextInputModel(ModelWrapper):
             return False
 
     def request_format(self):
-        return TextPredictionRequest
+        return TextRequest
 
     def response_format(self):
         return LabelScoreResponse

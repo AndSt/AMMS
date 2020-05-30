@@ -1,6 +1,7 @@
 import logging
 
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 from src.config import Config
 from src.servable_base import Servable
@@ -17,6 +18,8 @@ class ModelManager:
         for servable in self.servables:
             servable.update()
 
+    # future possibility to delete previously loaded models
+    # Keep in mind: loaded model means downloaded model; servable means model loaded in memory
     def clean_up_model_dir(self):
         pass
 
@@ -74,9 +77,15 @@ class ModelManager:
 
     def predict(self, model_name: str, version: str = None, input=None):
         """Predict. Check if matching model is available.
-
         """
+        # TODO logging
         servable = self.get_servable(model_name, version)
+        request_format = servable.model.request_format()
+        if isinstance(input, request_format) is False:
+            try:
+                input = servable.model.request_format()(**input)
+            except Exception as e:
+                raise RequestValidationError([e])
         if servable is False:
             response = {
                 'error_message': 'Model or version is not found',

@@ -2,27 +2,29 @@ version: "3.3"
 
 services:
   amms_exmpl_text_clf:
-    build: ../../amms
+    image: model_server:latest
     configs:
       - source: amms_model_config
-        target: /app/data/
+        target: /app/data/config
         mode: 0440  # user and group are allowed to read
     volumes:
-      - type: volume
-        source: shared_volume
-        target: /shared_volume
+      - shared_volume:/shared_volume
     ports:
       - "5000:5000"
   retrain_exmpl_text_clf:
-    build: retrain
+    image: retrain:latest
     env_file:
       - retrain/.retrain_env
     ports:
       - "6000:6000"
+    volumes:
+      - shared_volume:/shared_volume
 
 configs:
   amms_model_config:
-    file: local_servables.json
+    file: amms/servables.json
 
 volumes:
   shared_volume:
+
+

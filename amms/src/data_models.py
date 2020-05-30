@@ -31,17 +31,17 @@ class ModelRequest(BaseModel):
     version: str
 
 
-class PredictionRequest(BaseModel):
+class TextRequest(BaseModel):
+    examples: List[str]
+
+
+class TextPredictionRequest(TextRequest):
     model: ModelRequest
 
 
-class TextPredictionRequest(PredictionRequest):
-    input: Union[str, List[str]]
-
-
 class LabelScoreResponse(BaseModel):
-    preds: List[Union[int, str]]
-    pred_probas: List[List[Tuple[Union[int, str], float]]]
+    preds: List[str]
+    pred_probas: List[List[Tuple[str, float]]]
 
 
 class ModelNotFoundResponse(BaseModel):

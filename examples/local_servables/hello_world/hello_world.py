@@ -1,5 +1,5 @@
 from src.model_wrapper import ModelWrapper, ModelStatus
-from src.data_models import LabelScoreResponse, TextPredictionRequest
+from src.data_models import LabelScoreResponse, TextPredictionRequest, TextRequest
 
 
 class HelloWorldModel(ModelWrapper):
@@ -22,7 +22,7 @@ class HelloWorldModel(ModelWrapper):
             return False
 
     def request_format(self):
-        return TextPredictionRequest
+        return TextRequest
 
     def response_format(self):
         return LabelScoreResponse

@@ -10,7 +10,7 @@ from src.model_wrapper import ModelWrapper, ModelStatus
 from src.config import AspiredModel
 from src.version_manager import VersionManager
 from src.loader import Loader
-from src.utils import dynamic_model_creation
+from src.utils import dynamic_model_creation, pydantic_class_to_example
 
 
 class ServableStatus(str, Enum):
@@ -102,7 +102,7 @@ class Servable:
         logging.debug('Initialize servable {}'.format(aspired_model.model_name))
         self.model_dir = model_dir
         self.aspired_model = aspired_model
-        self.loader = Loader(aspired_model=aspired_model, model_dir=model_dir)
+        self.loader = Loader.from_aspired_model(aspired_model=aspired_model, model_dir=model_dir)
 
         self.meta_data: ServableMetaData = None
         self.model: ModelWrapper = None
@@ -181,8 +181,13 @@ class Servable:
         return servables[0]
 
     def meta_response(self):
-        request_format = self.model.request_format().schema() if self.model is not None else ''
-        response_format = self.model.request_format().schema() if self.model is not None else ''
+        request_format = {}
+        response_format = {}
+        if self.model is not None:
+            request_format = self.model.request_format()
+            request_format = pydantic_class_to_example(request_format)
+            response_format = self.model.request_format()
+            response_format = pydantic_class_to_example(response_format)
         return {
             'status': self.status,
             'meta_data': self.meta_data.as_dict(),

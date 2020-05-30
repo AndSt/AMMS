@@ -2,13 +2,13 @@ FROM amms_base
 LABEL maintainer='Andreas Stephan'
 
 
-COPY ../../docker_sklearn_text_input/requirements.txt /app/
+COPY requirements.txt /app/
 
 WORKDIR /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../../docker_sklearn_text_input/servables.json /app/data/config/
-COPY ../../docker_sklearn_text_input/sklearn_text_input.py /app/src/servables/
+COPY servables.json /app/data/config/
+COPY ../../docker_compose_sklearn_retraining/amms/sklearn_text_input.py /app/src/servables/
 RUN ls src
 RUN ls src/servables/
 # install requirements before code is loaded in order to

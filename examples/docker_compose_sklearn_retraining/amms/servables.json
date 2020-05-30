@@ -3,7 +3,7 @@
     "model_name": "simple_text",
     "aspired_version": "1.x",
     "load_type": "SHARE",
-    "load_url": "/Users/andreas.stephan/local_devel/AMMS/amms/tests/data/model_load_dir",
+    "load_url": "/shared_volume",
     "servable_name": "sklearn_text_input"
   }
 ]
