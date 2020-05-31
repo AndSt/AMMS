@@ -1,17 +1,12 @@
 FROM amms_base
 LABEL maintainer='Andreas Stephan'
 
-
-COPY ../../docker_sklearn_text_input/requirements.txt /app/
-
 WORKDIR /app
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt /app/
 
-COPY ../../docker_sklearn_text_input/servables.json /app/data/config/
-COPY ../../docker_sklearn_text_input/sklearn_text_input.py /app/src/servables/
-RUN ls src
-RUN ls src/servables/
-# install requirements before code is loaded in order to
+# install requirements before code is models in order to
+RUN pip install --no-cache-dir -r requirements.txt
+COPY servables.json /app/data/config/
 
 EXPOSE 5000
 CMD ["python", "api.py"]

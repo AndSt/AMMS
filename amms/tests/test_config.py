@@ -5,7 +5,7 @@ import logging
 from src.config import Config, setup_logging, AspiredModel
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-model_dir = '{}/data/loaded'.format(dir_path)
+model_dir = '{}/data/models'.format(dir_path)
 config_dir = '{}/data/config'.format(dir_path)
 
 

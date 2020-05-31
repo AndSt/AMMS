@@ -1,3 +1,0 @@
-# Run every 2 seconds
-*/30 * * * * * * python /retrain/train.py run
-# */30 * * * * * * ls /shared_volume

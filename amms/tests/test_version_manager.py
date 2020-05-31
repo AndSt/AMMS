@@ -50,8 +50,8 @@ def test_is_compatible_and_newer():
 
 def test_from_file_name():
     examples = [
-        ('simple_text-1_0_1-1588436916.135168.pbz2', '1.0.1'),
-        ('simplt-1_x-1588110709.491364.pbz2', '1.x')
+        ('simple_text-1_0_2-1588436916.135168.pbz2', '1.0.1'),
+        ('simple_text-1_x-1588110709.491364.pbz2', '1.x')
     ]
     for example in examples:
         version = VersionManager.from_file_name(example[0])

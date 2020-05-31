@@ -120,7 +120,7 @@ class Servable:
         raise RequestValidationError('No model available')  # TODO this error is totally wrong
 
     def update(self):
-        """Updates the currently loaded local_servables.
+        """Updates the currently models local_servables.
         Steps:
         1) Retrieve all local_servables in the specified model repository
         2) Compute the newest available, compatible model version. (See TODO for a compatibiltiy description)
@@ -173,8 +173,8 @@ class Servable:
     def newest_servable(servables: List[Servable]):
 
         # TODO has to be implemented and tested on lower level; compatibility logic might make sense
-        # newest = servables[0]
-        # for servable in servables:
+        # newest = provided_servables[0]
+        # for servable in provided_servables:
         #     if servable.meta_data.version > newest.meta_data.version:
         #         newest = servable
         # return newest

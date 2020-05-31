@@ -9,7 +9,7 @@ from src.version_manager import AspiredModel
 
 
 class Config:
-    def __init__(self, config_file: str = 'data/config/servables.json', model_dir: str = 'data/models'):
+    def __init__(self, config_file: str = 'data/config/provided_servables.json', model_dir: str = 'data/models'):
 
         self.config_file = config_file
         with open(config_file, 'r') as handle:

@@ -4,7 +4,7 @@ LABEL maintainer='Andreas Stephan'
 RUN mkdir -p /app/data
 COPY requirements.txt /app/
 
-# install requirements before code is loaded in order to
+# install requirements before code is models in order to
 WORKDIR /app
 RUN pip3 install --no-cache-dir -r requirements.txt
 

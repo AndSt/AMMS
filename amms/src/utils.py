@@ -13,7 +13,7 @@ def underscore_to_camelcase(value: str) -> str:
     return capitalized
 
 
-def dynamic_model_creation(servable_name: str, file_name: str, servable_path: str = 'src.servables'):
+def dynamic_model_creation(servable_name: str, file_name: str, servable_path: str = 'src.provided_servables'):
     servable_path = '{}.{}'.format(servable_path, servable_name)
     class_name = underscore_to_camelcase(servable_name) + 'Model'
 

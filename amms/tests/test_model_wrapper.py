@@ -5,7 +5,7 @@ from src.data_models import TextPredictionRequest, LabelScoreResponse
 
 # TODO all model tests
 dir_path = os.path.dirname(os.path.realpath(__file__))
-model_path = '{}/data/loaded/hello_world-1_0_1-1234.pbz2'.format(dir_path)
+model_path = '{}/data/models/hello_world-1_0_2-1234.pbz2'.format(dir_path)
 
 
 class PassingModel(ModelWrapper):

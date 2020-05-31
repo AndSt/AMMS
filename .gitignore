@@ -17,7 +17,7 @@
 htmlcov
 .coverage
 
-amms/src/servables/
+amms/src/provided_servables/
 examples/docker_compose_sklearn_retraining/shared_volume/*
 
 

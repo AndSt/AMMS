@@ -32,7 +32,11 @@ class ModelRequest(BaseModel):
 
 
 class TextRequest(BaseModel):
-    examples: List[str]
+    samples: List[str]
+
+
+class VectorRequest(BaseModel):
+    samples: List[List[float]]
 
 
 class TextPredictionRequest(TextRequest):

@@ -1,9 +1,0 @@
-[
-  {
-    "model_name": "simple_text",
-    "aspired_version": "1.x",
-    "load_type": "SHARE",
-    "load_url": "/shared_volume",
-    "servable_name": "sklearn_text_input"
-  }
-]

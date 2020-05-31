@@ -6,7 +6,7 @@ from src.config import AspiredModel
 from src.loader import Loader, LocalLoader, LoadType
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-model_dir = '{}/data/loaded'.format(dir_path)
+model_dir = '{}/data/models'.format(dir_path)
 
 
 @pytest.fixture()
@@ -26,7 +26,7 @@ def loaders(aspired_models) -> List[Loader]:
 
 @pytest.fixture()
 def file_names() -> List[str]:
-    return ['hello_world-1_0_1-1234.pbz2', 'simple_text-1_0_1-1588436916.135168.pbz2']
+    return ['hello_world-1_0_2-1234.pbz2', 'simple_text-1_0_2-1588436916.135168.pbz2']
 
 
 def test_from_aspired_model(aspired_models):

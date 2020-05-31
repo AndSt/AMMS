@@ -8,27 +8,27 @@ from src.servable_base import Servable
 
 
 class ModelManager:
-    def __init__(self, config_file: str = 'data/config/servables.json', model_dir: str = 'data/models'):
+    def __init__(self, config_file: str = 'data/config/provided_servables.json', model_dir: str = 'data/models'):
         self.config = Config(config_file=config_file, model_dir=model_dir)
         self.servables = []
-        logging.info('Load servables')
+        logging.info('Load provided_servables')
         self.servables = [Servable(aspired_model, model_dir) for aspired_model in self.config.aspired_models]
 
     def update(self):
         for servable in self.servables:
             servable.update()
 
-    # future possibility to delete previously loaded models
-    # Keep in mind: loaded model means downloaded model; servable means model loaded in memory
+    # future possibility to delete previously models models
+    # Keep in mind: models model means downloaded model; servable means model models in memory
     def clean_up_model_dir(self):
         pass
 
     def get_servable(self, model_name: str = None, version: str = None):
-        # Scenario 1: No servable is loaded
+        # Scenario 1: No servable is models
         if len(self.servables) == 0:
             # TODO error handling
             return False
-        # Scenario 1: Only 1 servable is loaded
+        # Scenario 1: Only 1 servable is models
         if len(self.servables) == 1:
             return self.servables[0]
 
@@ -61,7 +61,7 @@ class ModelManager:
         for servable in self.servables:
             models.append(servable.meta_response())
 
-        logging.info('Number of loaded models: {}'.format(len(models)))
+        logging.info('Number of models models: {}'.format(len(models)))
         return {'models': models}
 
     def model_meta_data_response(self, model_name: str = None, version: str = None):
@@ -75,21 +75,24 @@ class ModelManager:
             return JSONResponse(status_code=404, content=response)
         return servable.meta_response()
 
-    def predict(self, model_name: str, version: str = None, input=None):
+    def predict(self, model_name: str = None, version: str = None, input=None):
         """Predict. Check if matching model is available.
         """
         # TODO logging
         servable = self.get_servable(model_name, version)
-        request_format = servable.model.request_format()
-        if isinstance(input, request_format) is False:
-            try:
-                input = servable.model.request_format()(**input)
-            except Exception as e:
-                raise RequestValidationError([e])
         if servable is False:
             response = {
                 'error_message': 'Model or version is not found',
                 'available_models': self.all_models_meta_data_response()
             }
             return JSONResponse(status_code=404, content=response)
+
+        # for the standard /predict route, no data model is known, thus we have to transform
+        request_format = servable.model.request_format()
+        if isinstance(input, request_format) is False:
+            try:
+                input = servable.model.request_format()(**input)
+            except Exception as e:
+                raise RequestValidationError([e])
+
         return servable.predict(input)

@@ -4,7 +4,7 @@ import pytest
 from src.utils import underscore_to_camelcase, dynamic_model_creation, format_class_probas
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-model_path = '{}/data/loaded/'.format(dir_path)
+model_path = '{}/data/models/'.format(dir_path)
 
 
 def test_underscore_to_camelcase():
@@ -24,9 +24,9 @@ def test_underscore_to_camelcase():
 def test_dynamic_class_creation():
     class_filename_combo = [
         ('hello_world', 'hello_world-1_0_0-1234.pbz2'),
-        ('sklearn_text_input', 'simple_text-1_0_1-1588436916.135168.pbz2')
+        ('sklearn_text_input', 'simple_text-1_0_2-1588436916.135168.pbz2')
     ]
-    servable_path = 'tests.servables'
+    servable_path = 'tests.custom_servables'
     for combo in class_filename_combo:
         try:
             model = dynamic_model_creation(combo[0], '{}/{}'.format(model_path, combo[1]), servable_path)

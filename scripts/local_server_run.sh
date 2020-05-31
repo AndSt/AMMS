@@ -14,12 +14,10 @@ fi
 
 pip install -r "${servable_folder}/requirements.txt"
 
-rm -r "${AMMS_HOME}/amms/src/servables"
-rm $AMMS_HOME/amms/data/models/*.pbz2
-mkdir -p "${AMMS_HOME}/amms/src/servables"
-rm "${AMMS_HOME}/amms/data/config/servables.json"
+# clean and copy new files
+$AMMS_HOME/scripts/clean_amms_dir.sh
 
-cp -r $servable_folder/*.py $AMMS_HOME/amms/src/servables
+cp -r $servable_folder/*.py $AMMS_HOME/amms/src/custom_servables
 cp -r $servable_folder/*.pbz2 $AMMS_HOME/amms/data/model_load_dir
 cp "${servable_folder}/servables.json" $AMMS_HOME/amms/data/config
 

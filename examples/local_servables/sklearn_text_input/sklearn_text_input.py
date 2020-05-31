@@ -22,7 +22,7 @@ class SklearnTextInputModel(ModelWrapper):
 
     def predict(self, samples: TextRequest):
         self.validate_input(samples)
-        samples = samples.examples
+        samples = samples.samples
         if isinstance(samples, str):
             samples = [samples]
         # TODO check whether list, np.array, etc.
