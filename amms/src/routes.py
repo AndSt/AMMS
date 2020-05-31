@@ -4,7 +4,6 @@ from fastapi import APIRouter
 from src.model_manager import ModelManager
 from src.servable_base import Servable
 from src.data_models import ModelNotFoundResponse, LabelScoreResponse
-import logging
 
 
 def model_not_found_response():
@@ -14,9 +13,7 @@ def model_not_found_response():
 
 
 def get_routers(manager: ModelManager):
-    model_names = []
-    for servable in manager.servables:
-        model_names.append(servable.meta_data.model_name)
+    model_names = [servable.meta_data.model_name for servable in manager.servables]
     model_names = list(set(model_names))
 
     tag_router_tuples = []
@@ -71,11 +68,10 @@ def get_model_router(manager: ModelManager, model_name: str) -> Tuple[List[str],
         version = servable.meta_data.version
 
         async def predict_with_specific_version(input: servable.model.request_format()):
-            logging.info('predict', model_name, version, input)
             result = manager.predict(model_name=model_name, version=version, input=input)
             return result
 
         router.post('/predict/{}/{}'.format(model_name, version), response_model=LabelScoreResponse,
                     responses=model_not_found_response())(predict_with_specific_version)
-
+    print(model_name)
     return [model_name], router
