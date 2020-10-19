@@ -21,5 +21,6 @@ cp -r $servable_folder/*.py $AMMS_HOME/amms/src/custom_servables
 cp -r $servable_folder/*.pbz2 $AMMS_HOME/amms/data/model_load_dir
 cp "${servable_folder}/servables.json" $AMMS_HOME/amms/data/config
 
+ROOT_DIR=$AMMS_HOME/amms
 cd $AMMS_HOME/amms || exit
-python api.py
+PYTHONPATH=$ROOT_DIR python api.py

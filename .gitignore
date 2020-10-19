@@ -11,6 +11,7 @@
 **/logs
 **/models
 **.metaflow
+**/*.pyc
 
 # tests
 .pytest_cache

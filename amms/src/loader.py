@@ -17,10 +17,6 @@ class LoaderStatus(Enum):
 
 
 class Loader:
-    """
-    Future: - Think about putting up an abstraction like in tf-serving.
-            - Goal is to allow the User to construct his own Loader.
-    """
 
     def __init__(self, aspired_model: AspiredModel, model_dir: str = 'data/models'):
 
@@ -51,12 +47,6 @@ class Loader:
 
         raise NotImplementedError(
             'For the given LoadType, {}, no implemenation is given'.format(str(aspired_model.load_type)))
-
-
-# def load_from_s3(self):
-#     pass
-#     # s3 = boto3.client('s3')
-#     # s3.download_file('BUCKET_NAME', 'OBJECT_NAME', 'FILE_NAME')
 
 
 class LocalLoader(Loader):
@@ -90,3 +80,4 @@ class LocalLoader(Loader):
                 joblib.dump(model, local_handle)
 
         self.status = LoaderStatus.NOT_LOADING
+

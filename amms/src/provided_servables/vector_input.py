@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 
-from src.model_wrapper import ModelWrapper
+from src.provided_servables.model_wrapper import ModelWrapper
 from src.data_models import VectorRequest, LabelScoreResponse
 from src.utils import format_class_probas
 
@@ -22,7 +22,7 @@ class TextInputModel(ModelWrapper):
 
         preds_probas = self.model.predict_proba(samples).tolist()
         pred_probas = format_class_probas(self.model.classes_, preds_probas)
-        preds = np.argmax(preds_probas, axis=1).tolist()
+        preds = self.model.classes_[np.argmax(preds_probas, axis=1).tolist()]
         return {
             "preds": preds,
             "pred_probas": pred_probas
@@ -30,7 +30,11 @@ class TextInputModel(ModelWrapper):
 
     def test_predict(self):
         try:
-            ret = self.predict([[0, 1, 2], [3, 4, 5]])
+            vector_request = {
+                'samples': [[0, 1, 2], [3, 4, 5]]
+            }
+            vector_request = VectorRequest(**vector_request)
+            ret = self.predict(vector_request)
             LabelScoreResponse(**ret)
             return True
         except Exception as e:

@@ -3,7 +3,7 @@ from typing import Union, List
 import numpy as np
 import logging
 
-from src.model_wrapper import ModelWrapper
+from src.provided_servables.model_wrapper import ModelWrapper
 from src.data_models import TextPredictionRequest, LabelScoreResponse
 from src.utils import format_class_probas
 

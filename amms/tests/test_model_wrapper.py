@@ -1,6 +1,6 @@
 import os
 
-from src.model_wrapper import ModelWrapper
+from src.provided_servables.model_wrapper import ModelWrapper
 from src.data_models import TextPredictionRequest, LabelScoreResponse
 
 # TODO all model tests

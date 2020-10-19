@@ -27,9 +27,12 @@ def reload_models() -> None:
 
 
 app.include_router(health_status_router())
+
 app.include_router(meta_data_router(manager))
 
 app.include_router(predict_router(manager))
+
+# Router for each model type
 for tags, router in model_predict_routers(manager):
     app.include_router(router, tags=tags)
 

@@ -1,7 +1,8 @@
 import os
 import pytest
 
-from src.utils import underscore_to_camelcase, dynamic_model_creation, format_class_probas
+from src.utils import underscore_to_camelcase, dynamic_model_creation, format_class_probas, pydantic_class_to_example
+from src.data_models import TextRequest, LabelScoreResponse
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 model_path = '{}/data/models/'.format(dir_path)
@@ -43,3 +44,29 @@ def test_format_class_probas():
     ret_12 = [[('1', 1.), ('2', 2.), ('3', 3.), ('4', 4.)]]
 
     assert format_class_probas(classes, pred_probas_1) == ret_12
+
+
+def test_pydantic_class_to_example():
+    text_request_dict = {
+        "samples": [
+            "string"
+        ]
+    }
+    assert text_request_dict == pydantic_class_to_example(TextRequest)
+
+    label_score_response_dict = {
+        "preds": [
+            "string"
+        ],
+        "pred_probas": [
+            [
+                [
+                    [
+                        "string",
+                        "number"
+                    ]
+                ]
+            ]
+        ]
+    }
+    assert label_score_response_dict == pydantic_class_to_example(LabelScoreResponse)

@@ -8,10 +8,10 @@ from src.servable_base import Servable
 
 
 class ModelManager:
-    def __init__(self, config_file: str = 'data/config/provided_servables.json', model_dir: str = 'data/models'):
+    def __init__(self, config_file: str = 'data/config/servables.json', model_dir: str = 'data/models'):
         self.config = Config(config_file=config_file, model_dir=model_dir)
         self.servables = []
-        logging.info('Load provided_servables')
+        logging.info('Load servables.')
         self.servables = [Servable(aspired_model, model_dir) for aspired_model in self.config.aspired_models]
 
     def update(self):
@@ -24,15 +24,16 @@ class ModelManager:
         pass
 
     def get_servable(self, model_name: str = None, version: str = None):
-        # Scenario 1: No servable is models
+        # Scenario 1: No servable is loaded
         if len(self.servables) == 0:
             # TODO error handling
             return False
-        # Scenario 1: Only 1 servable is models
+
+        # Scenario 2: Only 1 servable is loaded
         if len(self.servables) == 1:
             return self.servables[0]
 
-        # Scenario 2: No model given. Then they're all of same type or error
+        # Scenario 3: No model given. Then they're either of same type or we cannot know which model to use.
         if model_name is None:
             names = [servable.meta_data.model_name for servable in self.servables]
             if len(set(names)) == 1:
@@ -44,12 +45,12 @@ class ModelManager:
 
         possible_servables = [servable for servable in self.servables if servable.meta_data.model_name == model_name]
 
-        # Scenario 3: Model given, no version
+        # Scenario 4: Model given, no version
         if version is None:
             return Servable.newest_servable(possible_servables)
         # TODO check, if only 1 model type
 
-        # Scenario 4: Model and version given
+        # Scenario 5: Model and version given
         matching_servable = [servable for servable in possible_servables if servable.meta_data.version == version]
         if len(matching_servable) == 0:
             # TODO error handling

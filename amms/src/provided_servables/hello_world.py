@@ -1,4 +1,4 @@
-from src.model_wrapper import ModelWrapper, ModelStatus
+from src.provided_servables.model_wrapper import ModelWrapper, ModelStatus
 from src.data_models import LabelScoreResponse, TextPredictionRequest
 
 

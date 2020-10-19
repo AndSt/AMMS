@@ -36,7 +36,6 @@ def format_class_probas(classes: List[str], pred_probas: List[List[float]]) -> L
 
 def pydantic_class_to_example(pydantic_class):
     schema = pydantic_class.schema()
-    print(schema)
     example = {}
     properties = schema.get('properties')
     for property in properties:
@@ -46,7 +45,11 @@ def pydantic_class_to_example(pydantic_class):
 
 
 def dig_in(property, schema):
-    print(property)
+    if isinstance(property, list):
+        ret = []
+        for prop in property:
+            ret.append(dig_in(prop, schema))
+        return ret
     if 'type' not in property:
         if "$ref" in property:
             pydantic_model = property['$ref'].split('/')[-1]
@@ -56,7 +59,6 @@ def dig_in(property, schema):
             dig_in(property.get('items'), schema)
         ]
     return property['type']
-    return ''
 
 
 def get_definition(pydantic_model, schema):

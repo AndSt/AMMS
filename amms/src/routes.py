@@ -30,7 +30,8 @@ def health_status_router():
             return {'status': 'error', "message": e}
 
     router = APIRouter()
-    #router.post("/health_check", response_model=HealthStatusResponse)(health_check)
+
+    # router.post("/health_check", response_model=HealthStatusResponse)(health_check)
     router.get("/health_check", response_model=HealthStatusResponse)(health_check)
 
     return router
@@ -90,18 +91,15 @@ def model_predict_routers(manager: ModelManager):
 
 
 def model_predict_router(manager: ModelManager, model_name: str) -> Tuple[List[str], APIRouter]:
-    # set up versions
-    versions = []
+
     servables = [servable for servable in manager.servables if servable.meta_data.model_name == model_name]
     newest_servable = Servable.newest_servable(servables)
-    for servable in manager.servables:
-        if servable.meta_data.model_name == model_name:
-            versions.append(str(servable.meta_data.version))
 
     # set router
     router = APIRouter()
 
     async def predict_using_newest_version(input: newest_servable.model.request_format()):
+        logging.debug('Prediction; model: {}, version: {}'.format(model_name, newest_servable.aspired_model))
         result = manager.predict(model_name=model_name, input=input)
         return result
 
@@ -113,6 +111,7 @@ def model_predict_router(manager: ModelManager, model_name: str) -> Tuple[List[s
         version = str(servable.aspired_model.aspired_version)
 
         async def predict_with_specific_version(input: servable.model.request_format()):
+            logging.debug('Prediction; model: {}, version: {}'.format(model_name, servable.meta_data.version))
             result = manager.predict(model_name=model_name, version=version, input=input)
             return result
 

@@ -50,13 +50,14 @@ def test_is_compatible_and_newer():
 
 def test_from_file_name():
     examples = [
-        ('simple_text-1_0_2-1588436916.135168.pbz2', '1.0.1'),
+        ('simple_text-1_0_1-1588436916.135168.pbz2', '1.0.1'),
         ('simple_text-1_x-1588110709.491364.pbz2', '1.x')
     ]
+
     for example in examples:
         version = VersionManager.from_file_name(example[0])
-        assert version.__eq__(VersionManager(example[1]))
-        assert version.__eq__(example[1])
+        assert version == VersionManager(example[1])
+        assert version == example[1]
 
 
 @pytest.fixture()
@@ -89,5 +90,3 @@ def test_aspired_model_is_compatible(aspired_model_dict):
     am = AspiredModel.from_json_dict(aspired_model_dict)
     compatible_file_name = 'test_name-1.2.3-1234.pbz2'
     incompatible_file_name = 'test_name-1'
-
-

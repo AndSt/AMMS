@@ -1,5 +1,8 @@
 import pytest
-from src.servable_base import ServableMetaData
+from typing import List
+
+from src.servable_base import ServableMetaData, Servable
+from src.version_manager import AspiredModel
 
 
 @pytest.fixture()
@@ -44,16 +47,16 @@ def test_servable_meta_is_equal(servable_metas):
 
 
 def test_servable_meta_is_compatible_and_newer(servable_metas):
-    assert servable_metas[0].is_compatible_and_newer(servable_metas[1]) == False
-    assert servable_metas[2].is_compatible_and_newer(servable_metas[0]) == True
-    assert servable_metas[3].is_compatible_and_newer(servable_metas[0]) == False
+    assert servable_metas[0].is_newer(servable_metas[1]) == False
+    assert servable_metas[2].is_newer(servable_metas[0]) == True
+    assert servable_metas[3].is_newer(servable_metas[0]) == False
 
     for i in range(1, len(servable_metas)):
-        assert servable_metas[4].is_compatible_and_newer(servable_metas[i]) == False
+        assert servable_metas[4].is_newer(servable_metas[i]) == False
 
 
 def test_servable_meta_compatible_newest(servable_metas):
-    assert servable_metas[0].compatible_newest(servable_metas[1:]) == servable_metas[2]
+    assert servable_metas[0].newest_version(servable_metas[1:]) == servable_metas[2]
 
 
 def test_servable_meta_to_file_name(servable_metas, file_names):
@@ -63,4 +66,3 @@ def test_servable_meta_to_file_name(servable_metas, file_names):
                 assert file_names[i] == servable_metas[i].to_file_name()
             else:
                 assert file_names[i] != servable_metas[j].to_file_name()
-

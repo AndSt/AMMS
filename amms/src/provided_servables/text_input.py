@@ -1,9 +1,7 @@
-from typing import Union, List
-
 import numpy as np
 import logging
 
-from src.model_wrapper import ModelWrapper
+from src.provided_servables.model_wrapper import ModelWrapper
 from src.data_models import TextRequest, LabelScoreResponse
 from src.utils import format_class_probas
 
@@ -26,13 +24,17 @@ class TextInputModel(ModelWrapper):
         label_probas = format_class_probas(self.model.classes_, preds_probas)
         preds = np.argmax(preds_probas, axis=1).tolist()
         return {
-            "preds": preds,
+            "preds": preds, # TODO change to classname
             "pred_probas": label_probas
         }
 
     def test_predict(self):
         try:
-            ret = self.predict(['Text1', 'Text2'])
+            text_request = {
+                'samples': ['Text1', 'Text2']
+            }
+            text_request = TextRequest(**text_request)
+            ret = self.predict(text_request)
             LabelScoreResponse(**ret)
             return True
         except Exception as e:

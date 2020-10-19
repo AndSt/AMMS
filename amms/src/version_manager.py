@@ -97,6 +97,25 @@ class VersionManager:
         else:
             return False
 
+    def is_newer(self, other: Union[str, VersionManager], compatible: bool = True) -> bool:
+        if isinstance(other, str):
+            other = VersionManager(other)
+
+        if self.is_exact_specification is False or other.is_exact_specification is False:
+            raise ValueError('Only versions with an exact specification, i.e. no \'x\' can be compared.')
+
+        if not compatible and other.main_version > self.main_version:
+            return True
+        if compatible and other.main_version != self.main_version:
+            return False
+
+        if other.sub_version > self.sub_version:
+            return True
+        elif other.sub_version == self.sub_version and other.sub_sub_version > self.sub_sub_version:
+            return True
+        else:
+            return False
+
     @staticmethod
     def from_file_name(file_name: str) -> VersionManager:
         split = file_name.split('-')
@@ -156,6 +175,9 @@ class AspiredModel:
             return True  # TODO
         else:
             return False
+
+    # def __str__(self):
+    #     return "{}-{}-"
 
     # TODO
     # - this equality test

@@ -6,7 +6,7 @@ from enum import Enum
 import logging
 from fastapi.exceptions import RequestValidationError
 
-from src.model_wrapper import ModelWrapper, ModelStatus
+from src.provided_servables.model_wrapper import ModelWrapper, ModelStatus
 from src.config import AspiredModel
 from src.version_manager import VersionManager
 from src.loader import Loader
@@ -51,7 +51,7 @@ class ServableMetaData:
             return True
         return False
 
-    def is_compatible_and_newer(self, servable_meta_data: ServableMetaData) -> bool:
+    def is_newer(self, servable_meta_data: ServableMetaData, compatible: bool = True) -> bool:
         if servable_meta_data.model_name != self.model_name:
             return False
 
@@ -59,31 +59,34 @@ class ServableMetaData:
             if self.timestamp < servable_meta_data.timestamp:
                 return True
 
-        if servable_meta_data.version.is_compatible_and_newer(self.version):
+        if servable_meta_data.version.is_newer(self.version, compatible=compatible):
             return True
 
         return False
 
-    def compatible_newest(self, servable_meta_datas: List[ServableMetaData]) -> Optional[ServableMetaData]:
+    @staticmethod
+    def newest_version(servable_meta_datas: List[ServableMetaData], aspired_model: AspiredModel = None) -> Optional[
+        ServableMetaData]:
         """
         :return:    False, if there is no newer list element which is compatible
                     ServableMetaData, if there is
         """
         if isinstance(servable_meta_datas, List) is False:
             raise ValueError('A list of type `ServableMetaData is expected`.')
+
         if len(servable_meta_datas) == 0:
             return None
 
-        newest_meta_data = None
+        if aspired_model:
+            servable_meta_datas = [meta_data for meta_data in servable_meta_datas if
+                                   aspired_model.is_compatible(meta_data.to_file_name())]
+
+        newest_meta_data = servable_meta_datas[0]
         for servable_meta_data in servable_meta_datas:
-            if isinstance(servable_meta_data, ServableMetaData) is False:
-                raise ValueError('A list of type `ServableMetaData is expected`.')
-            if servable_meta_data.is_compatible_and_newer(self):
+            if servable_meta_data.is_newer(newest_meta_data):
                 newest_meta_data = servable_meta_data
 
-        if newest_meta_data is not None:
-            return newest_meta_data
-        return None
+        return newest_meta_data
 
     def to_file_name(self) -> str:
         file_name = "{}-{}-{}.pbz2".format(self.model_name, self.version.to_file_str(), self.timestamp)
@@ -120,9 +123,9 @@ class Servable:
         raise RequestValidationError('No model available')  # TODO this error is totally wrong
 
     def update(self):
-        """Updates the currently models local_servables.
+        """Updates the servables.
         Steps:
-        1) Retrieve all local_servables in the specified model repository
+        1) Retrieve all servables in the specified model repository
         2) Compute the newest available, compatible model version. (See TODO for a compatibiltiy description)
         3) Load model from remote repository via Loader class
         4) Switch the current and the newer model
@@ -131,22 +134,15 @@ class Servable:
         logging.debug('Update servable {}, version {}'.format(self.aspired_model.model_name,
                                                               str(self.aspired_model.aspired_version)))
         servable_files = self.loader.load_available_models()
-
         if len(servable_files) == 0:
             logging.debug('Servable {} has no available models'.format(self.aspired_model.model_name))
             return
+
         servable_metas = [ServableMetaData.from_file_name(file_name=file_name) for file_name in servable_files]
-        # Only update if there are available versions
-
-        if self.meta_data is None:
-            newest_meta_data = servable_metas[0].compatible_newest(servable_metas[1:])
-            if newest_meta_data is None:
-                newest_meta_data = servable_metas[0]
-        else:
-            newest_meta_data = self.meta_data.compatible_newest(servable_metas)
-
-        if newest_meta_data is None:
-            return
+        newest_meta_data = ServableMetaData.newest_version(servable_metas, aspired_model=self.aspired_model)
+        if self.meta_data is not None:
+            if self.meta_data.is_newer(newest_meta_data):
+                return
 
         old_status = self.status
         file_name = newest_meta_data.to_file_name()
@@ -155,6 +151,7 @@ class Servable:
         except Exception as e:
             logging.error('Error during loading of model: {}'.format(e))
             pass
+
         # TODO optimize status behavior to prepare logging
         self.status = ServableStatus.LOADING
         file_path = '{}/{}'.format(self.model_dir, file_name)
@@ -172,13 +169,13 @@ class Servable:
     @staticmethod
     def newest_servable(servables: List[Servable]):
 
-        # TODO has to be implemented and tested on lower level; compatibility logic might make sense
-        # newest = provided_servables[0]
-        # for servable in provided_servables:
-        #     if servable.meta_data.version > newest.meta_data.version:
-        #         newest = servable
-        # return newest
-        return servables[0]
+        meta_datas = [servable.meta_data for servable in servables]
+        newest_meta_data = ServableMetaData.newest_version(meta_datas)
+
+        for servable in servables:
+            if servable.meta_data == newest_meta_data:
+                return servable
+        return None
 
     def meta_response(self):
         request_format = {}
@@ -186,7 +183,7 @@ class Servable:
         if self.model is not None:
             request_format = self.model.request_format()
             request_format = pydantic_class_to_example(request_format)
-            response_format = self.model.request_format()
+            response_format = self.model.response_format()
             response_format = pydantic_class_to_example(response_format)
         return {
             'status': self.status,
